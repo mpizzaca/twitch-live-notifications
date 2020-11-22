@@ -4,6 +4,7 @@
   "description": "Allows users to subscribe to chrome push notifications when their favorite Twitch streamers go live",
   "main": "index.js",
   "scripts": {
+    "start": "index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,6 +18,10 @@
   },
   "homepage": "https://github.com/mpizzaca/twitch-live-notifications#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "connect-mongo": "^3.2.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "mongodb": "^3.6.3",
+    "uuid": "^8.3.1"
   }
 }
