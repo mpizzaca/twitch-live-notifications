@@ -29,6 +29,6 @@ app.get('/', (req,res) => {
 })
 
 // start the server
-app.listen(3005, () => {
+app.listen(process.env.PORT || 3005, () => {
     console.log('Listening on localhost:3005');
 })
