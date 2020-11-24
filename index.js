@@ -2,6 +2,7 @@
 const express = require('express')
 const LogRequest = require('./logRequest')
 
+const secrets = require('./secrets')
 const dbUrl = 'mongodb://localhost:27017/mydb'
 const dbName = 'twitch-live-notifications-db'
 
@@ -18,6 +19,7 @@ app.use(LogRequest)
 // create homepage route at '/'
 app.get('/', (req,res) => {
     console.log('process.env.NODE_ENV: ' + process.env.NODE_ENV);
+    console.log(secrets.expressSessionSecret)
     res.send('homepage');
 })
 
