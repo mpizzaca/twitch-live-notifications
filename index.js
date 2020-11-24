@@ -17,8 +17,7 @@ app.use(LogRequest)
 /*********************/
 // create homepage route at '/'
 app.get('/', (req,res) => {
-    console.log('Inside the homepage callback function');
-    console.log(req.sessionID);
+    console.log('process.env.NODE_ENV: ' + process.env.NODE_ENV);
     res.send('homepage');
 })
 
