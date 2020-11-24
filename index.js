@@ -1,5 +1,7 @@
 // npm modules
 const express = require('express')
+const session = require('express-session')
+const mongoose = require('mongoose')
 const LogRequest = require('./logRequest')
 
 const secrets = require('./secrets')
@@ -12,14 +14,23 @@ const app = express();
 // add & configure middleware
 app.use(express.json())
 app.use(LogRequest)
+app.use(session({
+    secret: secrets.expressSessionSecret,
+    resave: false,
+    saveUninitialized: true,
+}))
+
+// configure mongoose
+mongoose.connect(dbUrl, { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true 
+})
 
 /*********************/
 //     ENDPOINTS     //
 /*********************/
 // create homepage route at '/'
 app.get('/', (req,res) => {
-    console.log('process.env.NODE_ENV: ' + process.env.NODE_ENV);
-    console.log(secrets.expressSessionSecret)
     res.send('homepage');
 })
 
