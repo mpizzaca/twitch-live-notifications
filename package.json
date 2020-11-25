@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/mpizzaca/twitch-live-notifications#readme",
   "dependencies": {
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "connect-mongo": "^3.2.0",
     "express": "^4.17.1",
