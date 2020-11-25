@@ -8,7 +8,9 @@ const LogRequest = require('./logRequest')
 const User = require('./models/Users')
 const bcrypt = require('bcrypt')
 
-const secrets = require('./secrets')
+var secrets;
+if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
+
 const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
 //const dbName = 'twitch-live-notifications-db'
 
