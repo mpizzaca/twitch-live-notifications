@@ -7,6 +7,7 @@ const passport = require('passport')
 const LogRequest = require('./logRequest')
 const User = require('./models/Users')
 const bcrypt = require('bcrypt')
+const path = require('path')
 
 var secrets;
 if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
@@ -37,13 +38,16 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
+app.set('view engine', 'pug')
+app.set('views', path.join(__dirname, 'views'))
+
 
 
 //*******************//
 //     ENDPOINTS     //
 //*******************//
 app.get('/', (req,res) => {
-    res.send('homepage');
+    res.render('home', req.user);
 })
 
 app.get('/login', (req, res) => {
