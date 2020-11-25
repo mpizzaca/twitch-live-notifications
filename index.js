@@ -46,7 +46,6 @@ app.get('/', (req,res) => {
 })
 
 app.get('/login', (req, res) => {
-    console.log('req.sessionID: ' + req.sessionID);
     res.send('login page');
 })
 
@@ -97,8 +96,7 @@ app.post('/register', (req,res) => {
                         newUser.password = hash
                         newUser.save()
                         .then(value => {
-                            console.log('value: ' + value)
-                            res.redirect('/users/login')
+                            res.redirect('/login')
                         })
                         .catch( value => console.log(value) )
                         
