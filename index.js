@@ -40,7 +40,6 @@ app.use(passport.session())
 //*******************//
 //     ENDPOINTS     //
 //*******************//
-// create homepage route at '/'
 app.get('/', (req,res) => {
     res.send('homepage');
 })
@@ -108,7 +107,7 @@ app.post('/register', (req,res) => {
 })
 
 app.get('/user/:username', (req, res) => {
-    if (req.isAuthenticated() && req.user.username == req.params.username) {
+    if (req.isAuthenticated() && req.user.username === req.params.username) {
         res.send('this is your private profile')
     } else {
         res.status(401).send('you are not authorized to view this page')
