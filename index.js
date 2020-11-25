@@ -27,7 +27,7 @@ const app = express();
 app.use(express.json())
 app.use(LogRequest)
 app.use(session({
-    secret: secrets.expressSessionSecret,
+    secret: process.env.EXPRESS_SESSION_SECRET || secrets.expressSessionSecret,
     resave: false,
     saveUninitialized: true,
     store: new MongoStore ({ mongooseConnection: mongoose.connection })
