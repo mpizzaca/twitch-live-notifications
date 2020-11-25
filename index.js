@@ -47,7 +47,7 @@ app.set('views', path.join(__dirname, 'views'))
 //     ENDPOINTS     //
 //*******************//
 app.get('/', (req,res) => {
-    res.render('home', req.user);
+    res.render('home', { username: req.user.username });
 })
 
 app.get('/login', (req, res) => {
@@ -118,6 +118,13 @@ app.get('/user/:username', (req, res) => {
     } else {
         res.status(401).send('you are not authorized to view this page')
     }
+})
+
+app.get('/logout', (req, res) => {
+    if (req.isAuthenticated()) {
+
+    }
+    res.render('home', { username: req.user.username });
 })
 
 
