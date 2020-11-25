@@ -47,7 +47,7 @@ app.set('views', path.join(__dirname, 'views'))
 //     ENDPOINTS     //
 //*******************//
 app.get('/', (req,res) => {
-    res.render('home', { username: req.user.username });
+    res.render('home', { username: req.user?.username });
 })
 
 app.get('/login', (req, res) => {
