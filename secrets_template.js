@@ -1,3 +1,4 @@
 module.exports = {
-    expressSessionSecret: 'secret'
+    expressSessionSecret: 'secret',
+    MONGODB_URL: 'mongodb://secret'
 }
