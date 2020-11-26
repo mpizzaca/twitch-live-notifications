@@ -1,0 +1,9 @@
+h1 register
+form(action="/register" method="post")
+    p username: 
+        input(type='text' name='username' autocomplete='username')
+    p password: 
+        input(type='password' name='password' autocomplete='new-password')
+    input(type='submit', value='submit')
+
+a(href='/') home

@@ -1,7 +1,10 @@
 p welcome #{username}
 
 if !username
-    button() login
-    button() register
+    form(action="/login")
+        button(type='submit') login
+    form(action='/register')
+        button(type='submit') register
 else
-    button() logout
+    form(action='/logout')
+        button(type='submit') logout

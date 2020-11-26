@@ -13,7 +13,6 @@ var secrets;
 if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
 
 const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
-//const dbName = 'twitch-live-notifications-db'
 
 require('./config/passport')(passport)
 
@@ -28,6 +27,7 @@ const app = express();
 
 // add & configure middleware
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(LogRequest)
 app.use(session({
     secret: process.env.EXPRESS_SESSION_SECRET || secrets.expressSessionSecret,
@@ -51,7 +51,7 @@ app.get('/', (req,res) => {
 })
 
 app.get('/login', (req, res) => {
-    res.send('login page');
+    res.render('login');
 })
 
 app.post('/login', (req, res, next) => {
@@ -60,25 +60,32 @@ app.post('/login', (req, res, next) => {
         if (!user) { 
             // authentication failed
             console.log('login for ' + req.body.username + ' failed: ' + JSON.stringify(info))
-            return res.redirect('/login') 
+            return res.render('login', { fail: true, message: info.message })
         }
 
         req.login(user, err => {
             if (err) throw err
-            
+            res.redirect('/')
         })
-
-        return res.send('login successful')
+        console.log('after login')
     })(req, res, next)
 })
 
+app.get('/register', (req, res) => {
+    if (req.isAuthenticated()) res.redirect('/')
+
+    res.render('register')
+})
+
 app.post('/register', (req,res) => {
+
+    console.log('req.body: ' + JSON.stringify(req.body))
 
     const { username, password } = req.body
     let errors = []
 
     if (!username || !password) { errors.push({ msg: 'All fields are required'}) }
-    if (password.length < 7) { errors.push({ msg: 'Password must be at least 7 characters'}) }
+    if (password?.length < 7) { errors.push({ msg: 'Password must be at least 7 characters'}) }
 
     if (errors.length > 0) {
         return res.send(errors)
@@ -121,10 +128,8 @@ app.get('/user/:username', (req, res) => {
 })
 
 app.get('/logout', (req, res) => {
-    if (req.isAuthenticated()) {
-
-    }
-    res.render('home', { username: req.user.username });
+    if (req.isAuthenticated()) { req.logout() }
+    res.redirect('/');
 })
 
 

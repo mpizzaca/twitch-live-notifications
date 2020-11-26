@@ -4,7 +4,7 @@
   "description": "Allows users to subscribe to chrome push notifications when their favorite Twitch streamers go live",
   "main": "index.js",
   "engines": {
-    "node":"14.x"
+    "node": "14.x"
   },
   "scripts": {
     "start": "node index.js",
@@ -26,9 +26,10 @@
     "connect-mongo": "^3.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "flash": "^1.1.0",
     "mongodb": "^3.6.3",
     "mongoose": "^5.10.15",
-    "passport": "^0.4.1",
+    "passport": "git+https://github.com/mpizzaca/passport.git",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
     "pug": "^3.0.0",
