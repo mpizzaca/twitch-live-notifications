@@ -6,5 +6,19 @@ if !username
     form(action='/register')
         button(type='submit') register
 else
+    div
+        form(action="/channels" method="POST")
+            p channels: 
+                input(type="text" name="channels" value=channels)
+                a 
+                button(type="submit" value="save") save
+    
+    p #{message}
+
+    p notifications enabled: 
+        input(type="checkbox")
+    input(type="button" value="send test notification")
+    br
+    br
     form(action='/logout')
         button(type='submit') logout

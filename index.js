@@ -1,26 +1,33 @@
 // npm modules
 const express = require('express')
+const webpush = require('web-push')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const mongoose = require('mongoose')
 const passport = require('passport')
 const LogRequest = require('./logRequest')
 const User = require('./models/Users')
+const UserData = require('./models/UserData')
 const bcrypt = require('bcrypt')
 const path = require('path')
-
-var secrets;
-if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
-
-const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
+const NotificationManager = require('./NotificationManager')
 
 require('./config/passport')(passport)
 
+// setup secrets
+var secrets;
+if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
+
 // configure mongoose
+const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
 mongoose.connect(dbUrl, { 
     useNewUrlParser: true, 
     useUnifiedTopology: true 
 })
+
+// set up Web Push VAPID details
+webpush.setVapidDetails(secrets.VapidKeys.subject, secrets.VapidKeys.publicKey, secrets.VapidKeys.privateKey);
+const notificationManager = new NotificationManager(webpush)
 
 // create the server
 const app = express();
@@ -47,7 +54,23 @@ app.set('views', path.join(__dirname, 'views'))
 //     ENDPOINTS     //
 //*******************//
 app.get('/', (req,res) => {
-    res.render('home', { username: req.user?.username });
+
+    var channels;
+
+    if (req.isAuthenticated()) {
+        UserData.findOne( {username: req.user.username }, (err, doc) => {
+            if(doc) {
+                console.log('found one: ' + JSON.stringify(doc))
+                channels = doc.channels.join(',')
+                res.render('home', { username: req.user?.username, channels: channels });
+            } else {
+                res.render('home', { username: req.user?.username });
+            }
+        })
+    } else { 
+        res.render('home', { username: req.user?.username });
+    }
+
 })
 
 app.get('/login', (req, res) => {
@@ -67,7 +90,6 @@ app.post('/login', (req, res, next) => {
             if (err) throw err
             res.redirect('/')
         })
-        console.log('after login')
     })(req, res, next)
 })
 
@@ -130,6 +152,58 @@ app.get('/user/:username', (req, res) => {
 app.get('/logout', (req, res) => {
     if (req.isAuthenticated()) { req.logout() }
     res.redirect('/');
+})
+
+app.get('/channels', (req, res) => {
+    //todo
+})
+
+app.post('/channels', (req, res) => {
+    // authenticate
+    if (!req.isAuthenticated()) res.status(401).send()
+
+    // debug
+    console.log('req.body: ' + JSON.stringify(req.body))
+
+    // validate request
+    const tmp = req.body.channels
+    var channels = []
+    try {
+        channels = tmp.replace(/[^A-Za-z0-9,]/g, '').toLowerCase().split(',').filter(ele => {
+            return ele != null && ele != ""
+        })
+    } catch(e) {
+        // handle errors
+        console.log('error creating channels array: ' + e)
+        res.render('/', { message: 'error updating channels' })
+    }
+
+    // debug
+    console.log('channels[]: ' + JSON.stringify(channels))
+
+    const filter = { username: req.user.username }
+    const update = { channels: channels }
+
+    // create/update UserData
+    UserData.findOneAndUpdate(filter, update, { new: true, useFindAndModify: false }, 
+        (err, doc) => {
+            if (!err && doc) {
+                // updated UserData channels
+                res.redirect('/')
+            } else if (!err && !doc) {
+                // save new UserData document
+                new UserData({
+                    username: req.user.username,
+                    channels
+                }).save().then(newDoc => {
+                    res.redirect('/')
+                })
+            } else {
+                // handle error
+                console.log('error finding/updating UserData channels: ' + err)
+                res.render('home', { message: 'error updating channels'})
+            }
+    })
 })
 
 
