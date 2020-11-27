@@ -26,7 +26,6 @@ mongoose.connect(dbUrl, {
 })
 
 // set up Web Push VAPID details
-webpush.setVapidDetails(secrets.VapidKeys.subject, secrets.VapidKeys.publicKey, secrets.VapidKeys.privateKey);
 const notificationManager = new NotificationManager(webpush)
 
 // create the server
