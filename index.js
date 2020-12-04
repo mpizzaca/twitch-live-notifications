@@ -12,7 +12,6 @@ const UserData = require('./models/UserData')
 const bcrypt = require('bcrypt')
 const path = require('path')
 const NotificationManager = require('./NotificationManager')
-
 require('./config/passport')(passport)
 
 // setup dev environment
@@ -172,10 +171,7 @@ app.post('/channels', (req, res) => {
     // authenticate
     if (!req.isAuthenticated()) res.status(401).send()
 
-    // debug
-    console.log('req.body: ' + JSON.stringify(req.body))
-
-    // validate request
+    // validate request / cleanup channels
     const tmp = req.body.channels
     var channels = []
     try {
@@ -185,11 +181,8 @@ app.post('/channels', (req, res) => {
     } catch(e) {
         // handle errors
         console.log('error creating channels array: ' + e)
-        res.render('/', { message: 'error updating channels' })
+        res.render('home', { message: 'error updating channels' })
     }
-
-    // debug
-    console.log('channels[]: ' + JSON.stringify(channels))
 
     const filter = { username: req.user.username }
     const update = { channels: channels }
@@ -256,5 +249,6 @@ app.post('/subscribe', (req, res) => {
 
 // start the server
 app.listen(process.env.PORT || 3005, () => {
-    console.log('Listening on localhost:3005');
+    if (process.env.PORT == undefined) console.log('Server is running on localhost:3005')
+    else console.log('Server is running')
 })

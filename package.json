@@ -29,6 +29,7 @@
     "flash": "^1.1.0",
     "mongodb": "^3.6.3",
     "mongoose": "^5.10.15",
+    "os": "^0.1.1",
     "passport": "git+https://github.com/mpizzaca/passport.git",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
