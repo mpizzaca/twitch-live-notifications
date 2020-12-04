@@ -1,6 +1,8 @@
-p welcome #{username}
+p welcome 
+    if user
+        b #{user.username}
 
-if !username
+if !user
     form(action="/login")
         button(type='submit') login
     form(action='/register')
@@ -9,16 +11,18 @@ else
     div
         form(action="/channels" method="POST")
             p channels: 
-                input(type="text" name="channels" value=channels)
+                input(type="text" name="channels" value=user.channels)
                 a 
                 button(type="submit" value="save") save
     
     p #{message}
 
     p notifications enabled: 
-        input(type="checkbox")
-    input(type="button" value="send test notification")
+        input(type="checkbox" id="notifications-checkbox" checked=user.notificationsEnabled)
+    input(type="button" value="send test notification" id="send-test-notification-button")
     br
     br
     form(action='/logout')
         button(type='submit') logout
+
+script(type="application/javascript" src="/client.js")

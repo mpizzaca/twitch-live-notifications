@@ -1,5 +1,9 @@
 module.exports = {
-    VAPID_WEBPUSH_MAILTO: 'mailto:secret',
+    VAPIDKEYS: {
+        MAILTO: "mailto:secret@gmail.com",
+        PUBLICKEY: "secret",
+        PRIVATEKEY: "secret"
+    },
     expressSessionSecret: 'secret',
     MONGODB_URL: 'mongodb://secret'
 }

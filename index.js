@@ -1,6 +1,7 @@
 // npm modules
 const express = require('express')
 const webpush = require('web-push')
+const favicon = require('serve-favicon')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const mongoose = require('mongoose')
@@ -14,17 +15,18 @@ const NotificationManager = require('./NotificationManager')
 
 require('./config/passport')(passport)
 
-// setup secrets
+// setup dev environment
 var secrets;
-if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
-
+if (process.env.NODE_ENV != 'production') {
+    secrets = require('./secrets')
+    mongoose.set('debug', true)
+}
 // configure mongoose
 const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
 mongoose.connect(dbUrl, { 
     useNewUrlParser: true, 
     useUnifiedTopology: true 
 })
-
 // set up Web Push VAPID details
 const notificationManager = new NotificationManager(webpush)
 
@@ -32,7 +34,9 @@ const notificationManager = new NotificationManager(webpush)
 const app = express();
 
 // add & configure middleware
+app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json())
+app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')))
 app.use(express.urlencoded({ extended: true }))
 app.use(LogRequest)
 app.use(session({
@@ -54,20 +58,24 @@ app.set('views', path.join(__dirname, 'views'))
 //*******************//
 app.get('/', (req,res) => {
 
-    var channels;
-
     if (req.isAuthenticated()) {
         UserData.findOne( {username: req.user.username }, (err, doc) => {
             if(doc) {
-                console.log('found one: ' + JSON.stringify(doc))
-                channels = doc.channels.join(',')
-                res.render('home', { username: req.user?.username, channels: channels });
+                // convert mongoose document to javascript object & stringify channels, can't do in pug
+                doc = doc.toObject()
+                doc.channels = doc.channels.join(',')
+
+                res.render('home', { user: doc });
+            } else if (err) {
+                console.log('Error: ' + JSON.stringify(err))
             } else {
-                res.render('home', { username: req.user?.username });
+                // user is authenticated but no UserData exists -- somethings gone wrong
+                console.log('Error on GET / : user is authenticated but no UserData could be found')
+                console.log('req.user: ' + JSON.stringify(req.user))
             }
         })
     } else { 
-        res.render('home', { username: req.user?.username });
+        res.render('home');
     }
 
 })
@@ -135,6 +143,9 @@ app.post('/register', (req,res) => {
                         
                     })
                 })
+
+                // create new UserData
+                const newUserData = new UserData( { username }).save()
             }
         })
     }
@@ -203,6 +214,43 @@ app.post('/channels', (req, res) => {
                 res.render('home', { message: 'error updating channels'})
             }
     })
+})
+
+app.get('/subscribe', (req, res) => {
+    if(!req.isAuthenticated()) {
+        return res.sendStatus(401)
+    } else {
+        UserData.findOne({ username: req.user.username }, (err, doc) => {
+            if (err) { return res.sendStatus(400) }
+            if (doc) { console.log(doc.webpushSubscription); return res.send(doc.webpushSubscription) }// || JSON.stringify({}))}
+        })
+    }
+})
+
+// User enabled notifications. 
+// Request will contain WebPush subscription necessary to send the notification.
+app.post('/subscribe', (req, res) => {
+    if (req.isAuthenticated()) {
+        console.log(JSON.stringify(req.body))
+
+        const filter = { username: req.user.username }
+        const update = { webpushSubscription: req.body.subscription, notificationsEnabled: req.body.notifications }
+
+        UserData.findOneAndUpdate(filter, update, { new: true, useFindAndModify: false },
+            (err, doc) => {
+                if (doc && !err) {
+                    // updated UserData object
+                    //return res.send(doc)
+                    console.log('doc: ' + JSON.stringify(doc))
+                    return res.sendStatus(200)
+                } else if (err) {
+                    return res.status(400).send(err)
+                }
+        })
+
+    } else {
+        res.status(401).send()
+    }
 })
 
 
