@@ -19,7 +19,7 @@ require('./config/passport')(passport)
 var secrets;
 if (process.env.NODE_ENV != 'production') {
     secrets = require('./secrets')
-    mongoose.set('debug', true)
+    //mongoose.set('debug', true)
 }
 // configure mongoose
 const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
@@ -262,6 +262,11 @@ app.post('/notify', (req, res) => {
             return res.redirect('/')
         })
     } else { res.status(401).send() }
+})
+
+app.get('/test', (req, res) => {
+    twitchWebhookManager.SubscribeToChannelUpdates()
+    return res.redirect('/')
 })
 
 
