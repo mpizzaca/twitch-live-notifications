@@ -19,9 +19,10 @@ else
 
     p notifications enabled: 
         input(type="checkbox" id="notifications-checkbox" checked=user.notificationsEnabled)
-    input(type="button" value="send test notification" id="send-test-notification-button")
-    br
-    br
+    
+    form(action="/notify" method="POST")
+        button(type="submit" id="send-test-notification-button" ) send test notification
+
     form(action='/logout')
         button(type='submit') logout
 

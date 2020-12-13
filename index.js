@@ -12,6 +12,7 @@ const UserData = require('./models/UserData')
 const bcrypt = require('bcrypt')
 const path = require('path')
 const NotificationManager = require('./NotificationManager')
+const TwitchWebhookManager = require('./TwitchWebhookManager')
 require('./config/passport')(passport)
 
 // setup dev environment
@@ -26,8 +27,9 @@ mongoose.connect(dbUrl, {
     useNewUrlParser: true, 
     useUnifiedTopology: true 
 })
-// set up Web Push VAPID details
+// set NotificationManager
 const notificationManager = new NotificationManager(webpush)
+const twitchWebhookManager = new TwitchWebhookManager()
 
 // create the server
 const app = express();
@@ -39,7 +41,7 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')))
 app.use(express.urlencoded({ extended: true }))
 app.use(LogRequest)
 app.use(session({
-    secret: process.env.EXPRESS_SESSION_SECRET || secrets.expressSessionSecret,
+    secret: process.env.EXPRESS_SESSION_SECRET || secrets.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     store: new MongoStore ({ mongooseConnection: mongoose.connection })
@@ -244,6 +246,22 @@ app.post('/subscribe', (req, res) => {
     } else {
         res.status(401).send()
     }
+})
+
+// send a test notification
+app.post('/notify', (req, res) => {
+    if (req.isAuthenticated()) {
+        // find user's webpushSubscription & call notificationManager to trigger notification
+        UserData.findOne( {username: req.user.username }, 'webpushSubscription', (err, doc) => {
+            if (err) { res.status(400).send(err) }
+            var payload = JSON.stringify({
+                title: 'Congratulations!',
+                body: 'Notifications are enabled!'
+            })
+            notificationManager.sendNotification(doc.webpushSubscription, payload)
+            return res.redirect('/')
+        })
+    } else { res.status(401).send() }
 })
 
 

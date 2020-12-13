@@ -1,9 +1,9 @@
 module.exports = {
-    VAPIDKEYS: {
-        MAILTO: "mailto:secret@gmail.com",
-        PUBLICKEY: "secret",
-        PRIVATEKEY: "secret"
-    },
-    expressSessionSecret: 'secret',
-    MONGODB_URL: 'mongodb://secret'
+    VAPID_MAILTO: 'mailto:secret',
+    VAPID_PUBLICKEY: 'secret',
+    VAPID_PRIVATEKEY: 'secret',
+    TWITCH_CLIENT_ID: 'secret',
+    TWITCH_CLIENT_SECRET: 'secret',
+    EXPRESS_SESSION_SECRET: 'secret',
+    MONGODB_URL: 'mongodb+srv://secret'
 }

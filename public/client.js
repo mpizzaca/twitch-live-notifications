@@ -21,8 +21,10 @@ async function run() {
     console.log('Registered service worker');
 
     fetch('/subscribe')
-        .then(response => { return response.json() })
-        .then(body => {
+        .then(response => { 
+            if (response.status === 401) { throw new Error("No user session") }
+            return response.json() 
+        }).then(body => {
             if (body != null) {
                 // server has a saved subscription -> update with ours if different
                 registration.pushManager.getSubscription()
@@ -35,10 +37,9 @@ async function run() {
                             console.log('Server push subscription matches local')
                         }
                     })
-                }
+                    Buttons.enable()
+            }
         }).catch(error => console.log(error))
-
-        Buttons.enable()
 }
 
 
