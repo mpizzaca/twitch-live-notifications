@@ -9,11 +9,14 @@ const passport = require('passport')
 const LogRequest = require('./logRequest')
 const User = require('./models/Users')
 const UserData = require('./models/UserData')
+const Channel = require('./models/Channel')
 const bcrypt = require('bcrypt')
 const path = require('path')
 const NotificationManager = require('./NotificationManager')
 const TwitchWebhookManager = require('./TwitchWebhookManager')
 require('./config/passport')(passport)
+
+const TWITCH_API_LEASE_SECONDS = 30 //864000
 
 // setup dev environment
 var secrets;
@@ -29,7 +32,7 @@ mongoose.connect(dbUrl, {
 })
 // set NotificationManager
 const notificationManager = new NotificationManager(webpush)
-const twitchWebhookManager = new TwitchWebhookManager()
+const twitchWebhookManager = new TwitchWebhookManager(TWITCH_API_LEASE_SECONDS)
 
 // create the server
 const app = express();
@@ -267,6 +270,38 @@ app.post('/notify', (req, res) => {
 app.get('/test', (req, res) => {
     twitchWebhookManager.SubscribeToChannelUpdates()
     return res.redirect('/')
+})
+
+app.get('/streams/*', (req, res) => {
+    if (req.query['hub.challenge']) {
+        // twitch API is confirming webhook - respond with challenge
+        console.log('Webhook subscription confirmed for: ' + req.params['0'])
+        return res.send(req.query['hub.challenge'])
+    }
+})
+
+app.post('/streams/*', (req, res) => {
+    let live = (req.body.data[0]?.type === 'live')
+    console.log('live: ' + live)
+
+    Channel.findOne({ name: req.params['0'] }, (err, doc) => {
+        if (err) {
+            console.log('Error finding \'channel\': ' + err)
+            return res.send()
+        } else {
+            // debug: console.log('doc: ' + doc)
+            if (live && !doc.live) {
+                // channel just went live - send notification
+                console.log(req.params['0'] + ' just went live, sending notifications')
+                // TODO: send notification with payload
+            }
+
+            // update 'channels' live status
+            Channel.findOneAndUpdate({ name: req.params['0'] }, { live: live }, { useFindAndModify: false }).exec()
+
+            return res.send()
+        }
+    })
 })
 
 
