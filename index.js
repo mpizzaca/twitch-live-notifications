@@ -16,7 +16,10 @@ const NotificationManager = require('./NotificationManager')
 const TwitchWebhookManager = require('./TwitchWebhookManager')
 require('./config/passport')(passport)
 
-const TWITCH_API_LEASE_SECONDS = 30 //864000
+let TWITCH_API_LEASE_SECONDS 
+
+if (process.env.NODE_ENV != 'production') TWITCH_API_LEASE_SECONDS = 30
+else TWITCH_API_LEASE_SECONDS = 300
 
 // setup dev environment
 var secrets;
