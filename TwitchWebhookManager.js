@@ -182,80 +182,52 @@ class TwitchWebhookManager {
                 
                 }
         }
-
+        
+        // if we added new channels, wait for the enrichment promises to resolve before Subscribing to Webhooks
         if (promises) {
             Promise.all(promises).then(vals => {
-                // Subscribe to Webhook for status updates on all channels
-                let callbackUrl = this.NGROK_URL || process.env.CALLBACK_URL
-                console.log('callbackUrl: ' + callbackUrl)
-                Channels.find((err, docs) => {
-                    docs.forEach(async doc => {
-                        console.log('doc: ' + JSON.stringify(doc))
-                        let body = {
-                            'hub.callback': callbackUrl + '/streams/' + doc.name,
-                            'hub.mode': 'subscribe',
-                            'hub.topic': this.HelixEndpoints.Streams + '?user_id=' + doc.user_id,
-                            'hub.lease_seconds': this.TWITCH_API_LEASE_SECONDS
-                        }
-                        
-                        let options = {
-                            url: this.HelixEndpoints.Subscribe,
-                            json: true,
-                            method: 'POST',
-                            body: body,
-                            headers: {
-                                'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
-                                'Authorization': this.TWITCH_API_TOKEN
-                            }
-                        }
-
-                        let req_p = util.promisify(request)
-                        let res
-                        try {
-                            res = await req_p(options)
-                        } catch (err) { return console.log('TWM: error subscribing to webhook: ' + err) }
-                        if (res.statusCode === 202) { console.log('TWM: successfully subscribed to webhook for ' + doc.name) }
-                        else { console.log('TWM: webhook subscription returned non-202: ' + JSON.stringify(res)) }
-
-                    })
-                })
+                this.subToWebhooks()
             })
         } else {
-            // Subscribe to Webhook for status updates on all channels
-            let callbackUrl = this.NGROK_URL || process.env.CALLBACK_URL
-            console.log('callbackUrl: ' + callbackUrl)
-            Channels.find((err, docs) => {
-                docs.forEach(async doc => {
-                    console.log('doc: ' + JSON.stringify(doc))
-                    let body = {
-                        'hub.callback': callbackUrl + '/streams/' + doc.name,
-                        'hub.mode': 'subscribe',
-                        'hub.topic': this.HelixEndpoints.Streams + '?user_id=' + doc.user_id,
-                        'hub.lease_seconds': this.TWITCH_API_LEASE_SECONDS
-                    }
-                    
-                    let options = {
-                        url: this.HelixEndpoints.Subscribe,
-                        json: true,
-                        method: 'POST',
-                        body: body,
-                        headers: {
-                            'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
-                            'Authorization': this.TWITCH_API_TOKEN
-                        }
-                    }
-
-                    let req_p = util.promisify(request)
-                    let res
-                    try {
-                        res = await req_p(options)
-                    } catch (err) { return console.log('TWM: error subscribing to webhook: ' + err) }
-                    if (res.statusCode === 202) { console.log('TWM: successfully subscribed to webhook for ' + doc.name) }
-                    else { console.log('TWM: webhook subscription returned non-202: ' + JSON.stringify(res)) }
-
-                })
-            })
+            this.subToWebhooks()
         }
+    }
+
+    // Subscribe to Webhook for status updates on all channels
+    subToWebhooks() {
+        let callbackUrl = this.NGROK_URL || process.env.CALLBACK_URL
+        console.log('callbackUrl: ' + callbackUrl)
+        Channels.find((err, docs) => {
+            docs.forEach(async doc => {
+                console.log('doc: ' + JSON.stringify(doc))
+                let body = {
+                    'hub.callback': callbackUrl + '/streams/' + doc.name,
+                    'hub.mode': 'subscribe',
+                    'hub.topic': this.HelixEndpoints.Streams + '?user_id=' + doc.user_id,
+                    'hub.lease_seconds': this.TWITCH_API_LEASE_SECONDS
+                }
+                
+                let options = {
+                    url: this.HelixEndpoints.Subscribe,
+                    json: true,
+                    method: 'POST',
+                    body: body,
+                    headers: {
+                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
+                        'Authorization': this.TWITCH_API_TOKEN
+                    }
+                }
+
+                let req_p = util.promisify(request)
+                let res
+                try {
+                    res = await req_p(options)
+                } catch (err) { return console.log('TWM: error subscribing to webhook: ' + err) }
+                if (res.statusCode === 202) { console.log('TWM: successfully subscribed to webhook for ' + doc.name) }
+                else { console.log('TWM: webhook subscription returned non-202: ' + JSON.stringify(res)) }
+
+            })
+        })
     }
 }
 
