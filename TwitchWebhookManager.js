@@ -63,7 +63,7 @@ class TwitchWebhookManager {
 
 
     // Subscribes to Twitch webhook updates for all subscribed-to channels
-    // runs every 5 mins
+    // runs on interval = TWITCH_API_LEASE_SECONDS
     async SubscribeToChannelUpdates() {
 
         // Get all unique channels from userdatas collection = newChannels
@@ -215,8 +215,6 @@ class TwitchWebhookManager {
 
             })
         })
-        
-
     }
 }
 

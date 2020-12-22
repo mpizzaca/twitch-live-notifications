@@ -37,11 +37,13 @@ mongoose.connect(dbUrl, {
 const notificationManager = new NotificationManager(webpush)
 const twitchWebhookManager = new TwitchWebhookManager(TWITCH_API_LEASE_SECONDS)
 
-// consitently create new Twitch Webhook subscriptions for all active 'channels'.
-// interval equal to the webhook lifespan
-setInterval(() => {
+// setup recurring webhook subscriptions (wait 10s before first, then run every time webhook expires)
+setTimeout(() => {
     twitchWebhookManager.SubscribeToChannelUpdates()
-}, TWITCH_API_LEASE_SECONDS * 1000)
+    setInterval(() => {
+        twitchWebhookManager.SubscribeToChannelUpdates()
+    }, TWITCH_API_LEASE_SECONDS * 1000)
+}, 10000)
 
 // create the server
 const app = express();
@@ -52,7 +54,7 @@ app.use(express.json())
 try {
     app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')))
 } catch (err) {
-    
+
 }
 app.use(express.urlencoded({ extended: true }))
 app.use(LogRequest)
