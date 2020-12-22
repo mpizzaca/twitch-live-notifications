@@ -49,7 +49,11 @@ const app = express();
 // add & configure middleware
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json())
-app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')))
+try {
+    app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')))
+} catch (err) {
+    
+}
 app.use(express.urlencoded({ extended: true }))
 app.use(LogRequest)
 app.use(session({
