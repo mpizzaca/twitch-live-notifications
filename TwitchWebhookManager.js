@@ -35,8 +35,6 @@ class TwitchWebhookManager {
                 grant_type: 'client_credentials'
             },
         }
-
-        console.log('options: ' + JSON.stringify(options))
         // 1.b) send request
         request(options, (err, res, body) => {
             if (err) console.log('TWM: error retrieving Twitch API token: ' + err)
@@ -128,7 +126,7 @@ class TwitchWebhookManager {
                     url: this.HelixEndpoints.Streams + '?' + qs,
                     json: true,
                     headers: {
-                        'Client-ID': secrets.TWITCH_CLIENT_ID,
+                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
                         'Authorization': this.TWITCH_API_TOKEN,
                     }
                 }
@@ -161,7 +159,7 @@ class TwitchWebhookManager {
                     url: this.HelixEndpoints.Users + '?' + qs,
                     json: true,
                     headers: {
-                        'Client-ID': secrets.TWITCH_CLIENT_ID,
+                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
                         'Authorization': this.TWITCH_API_TOKEN
                     }
                 }
@@ -203,7 +201,7 @@ class TwitchWebhookManager {
                     method: 'POST',
                     body: body,
                     headers: {
-                        'Client-ID': secrets.TWITCH_CLIENT_ID,
+                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
                         'Authorization': this.TWITCH_API_TOKEN
                     }
                 }
