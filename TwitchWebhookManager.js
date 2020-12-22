@@ -34,7 +34,9 @@ class TwitchWebhookManager {
                 client_secret: process.env.TWITCH_CLIENT_SECRET || secrets.TWITCH_CLIENT_SECRET,
                 grant_type: 'client_credentials'
             },
-        } 
+        }
+
+        console.log('options: ' + JSON.stringify(options))
         // 1.b) send request
         request(options, (err, res, body) => {
             if (err) console.log('TWM: error retrieving Twitch API token: ' + err)
