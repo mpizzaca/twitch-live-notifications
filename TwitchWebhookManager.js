@@ -7,7 +7,6 @@ if (process.env.NODE_ENV != 'production') secrets = require('./secrets')
 
 class TwitchWebhookManager {
 
-    TWITCH_API_TOKEN;
     TWITCH_API_LEASE_SECONDS;
     NGROK_URL;
 
@@ -17,6 +16,10 @@ class TwitchWebhookManager {
         Users: 'https://api.twitch.tv/helix/users',
         Streams: 'https://api.twitch.tv/helix/streams',
         Token: 'https://id.twitch.tv/oauth2/token'
+    }
+
+    TwitchHeaders = {
+        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
     }
 
     constructor(leaseSeconds) {
@@ -41,8 +44,8 @@ class TwitchWebhookManager {
             else if (res?.statusCode !== 200) console.log('TWM: issue retrieving Twitch API token: ' + JSON.stringify(res))
             else {
                 // 1.c) Twitch API token retrieval was successful - save the token
-                this.TWITCH_API_TOKEN = 'Bearer ' + body.access_token
-                console.log('TWM: Twitch API token retreived succesfully: ' + this.TWITCH_API_TOKEN)
+                this.TwitchHeaders.Authorization = 'Bearer ' + body.access_token
+                console.log('TWM: Twitch API token retreived succesfully: ' + this.TwitchHeaders.Authorization)
             }
         })
 
@@ -128,18 +131,17 @@ class TwitchWebhookManager {
                 let options = {
                     url: this.HelixEndpoints.Streams + '?' + qs,
                     json: true,
-                    headers: {
-                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
-                        'Authorization': this.TWITCH_API_TOKEN,
-                    }
+                    headers: this.TwitchHeaders
                 }
                 let req_p = util.promisify(request)
                 let res;
                 try {
+                    console.log('twitch headers: ' + JSON.stringify(this.TwitchHeaders))
                     res = await req_p(options)
                 } catch (err) { console.log('TWM: error pulling addedChannels status: ' + err) }
                 // channels in 'data' array with type=live are live, all others are not
                 let liveChannels = []
+                console.log('streams res: ' + JSON.stringify(res))
                 res.body.data.forEach(element => {
                     if (element.type === 'live') {
                         liveChannels.push(element.user_name.toLowerCase())
@@ -161,10 +163,7 @@ class TwitchWebhookManager {
                 let options = {
                     url: this.HelixEndpoints.Users + '?' + qs,
                     json: true,
-                    headers: {
-                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
-                        'Authorization': this.TWITCH_API_TOKEN
-                    }
+                    headers: this.TwitchHeaders
                 }
                 let req_p = util.promisify(request)
                 let res;
@@ -185,9 +184,7 @@ class TwitchWebhookManager {
         
         // if we added new channels, wait for the enrichment promises to resolve before Subscribing to Webhooks
         if (promises) {
-            Promise.all(promises).then(vals => {
-                this.subToWebhooks()
-            })
+            Promise.all(promises).then(vals => { this.subToWebhooks() })
         } else {
             this.subToWebhooks()
         }
@@ -212,10 +209,7 @@ class TwitchWebhookManager {
                     json: true,
                     method: 'POST',
                     body: body,
-                    headers: {
-                        'Client-ID': process.env.TWITCH_CLIENT_ID || secrets.TWITCH_CLIENT_ID,
-                        'Authorization': this.TWITCH_API_TOKEN
-                    }
+                    headers: this.TwitchHeaders
                 }
 
                 let req_p = util.promisify(request)
