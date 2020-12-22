@@ -22,6 +22,10 @@ async function run() {
 
     fetch('/subscribe')
         .then(response => { 
+            if (Object.keys(response).length === 0) {
+                // server has no subscription - ready buttons to enable notifications
+                return Buttons.enable()
+            }
             if (response.status === 401) { throw new Error("No user session") }
             return response.json() 
         }).then(body => {

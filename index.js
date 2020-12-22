@@ -30,9 +30,15 @@ mongoose.connect(dbUrl, {
     useNewUrlParser: true, 
     useUnifiedTopology: true 
 })
-// set NotificationManager
+// set NotificationManager, TwitchWebhookManager
 const notificationManager = new NotificationManager(webpush)
 const twitchWebhookManager = new TwitchWebhookManager(TWITCH_API_LEASE_SECONDS)
+
+// consitently create new Twitch Webhook subscriptions for all active 'channels'.
+// interval equal to the webhook lifespan
+setInterval(() => {
+    twitchWebhookManager.SubscribeToChannelUpdates()
+}, TWITCH_API_LEASE_SECONDS * 1000)
 
 // create the server
 const app = express();
@@ -286,19 +292,32 @@ app.post('/streams/*', (req, res) => {
 
     Channel.findOne({ name: req.params['0'] }, (err, doc) => {
         if (err) {
-            console.log('Error finding \'channel\': ' + err)
+            console.log('Error finding channel: ' + err)
             return res.send()
         } else {
             // debug: console.log('doc: ' + doc)
             if (live && !doc.live) {
                 // channel just went live - send notification
                 console.log(req.params['0'] + ' just went live, sending notifications')
-                // TODO: send notification with payload
-            }
+                // TODO: send notification with payload to all users monitoring this channel
+                // TODO: pull all UserDatas where our channel in UserDatas.channels array
 
+                let payload = {
+                    title: req.params['0'] + ' just went live!',
+                    icon: doc.profile_image_url,
+                    actions: [{ action: 'watch', title: 'Watch now!'}]
+                }
+                payload = JSON.stringify(payload)
+
+                UserData.find({ channels: req.params['0']}, (err, res) => {
+                    if (err) { return console.log('Error pulling UserData to send notifications: ' + err) }
+                    res.forEach(doc => {
+                        notificationManager.sendNotification(doc.webpushSubscription, payload)
+                    })
+                })
+            } else if (!live && doc.live) { console.log(req.params['0'] + ' just went offline') }
             // update 'channels' live status
             Channel.findOneAndUpdate({ name: req.params['0'] }, { live: live }, { useFindAndModify: false }).exec()
-
             return res.send()
         }
     })

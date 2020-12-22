@@ -69,15 +69,15 @@ class TwitchWebhookManager {
         // Get all unique channels from userdatas collection = newChannels
         var newChannels 
         try {
-            newChannels = await UserData.distinct('channels')
-            console.log('newChannels: ' + channels)
+            newChannels = await UserData.distinct('channels').exec()
+            console.log('newChannels: ' + newChannels)
         } catch (err) { return console.log('TWM: error getting UserData channels: ' + JSON.stringify(err)) }
 
         // Get all channels from channels collection = oldChannels
         var oldChannels
         try {
-            oldChannels = await Channels.distinct('name')
-            console.log('oldChannels: ' + channels)
+            oldChannels = await Channels.distinct('name').exec()
+            console.log('oldChannels: ' + oldChannels)
         } catch (err) { return console.log('TWM: error getting oldChannels: ' + JSON.stringify(err)) }
 
         // Compare newChannels and oldChannels to get:
@@ -113,74 +113,78 @@ class TwitchWebhookManager {
                 if (err) console.log('TWM: error inserting addedChannels: ' + JSON.stringify(err))
                 // debug: console.log('addedChannels mongo result: ' + JSON.stringify(docs))
             })
+
+            // Pull 'stream' data for addedChannels to enrich Channels collection. Will save:
+            // current live status
+            {
+                let qs = new URLSearchParams()
+                addedChannels.forEach(element => {
+                    qs.append('user_login', element)
+                })
+                let options = {
+                    url: this.HelixEndpoints.Streams + '?' + qs,
+                    json: true,
+                    headers: {
+                        'Client-ID': secrets.TWITCH_CLIENT_ID,
+                        'Authorization': this.TWITCH_API_TOKEN,
+                    }
+                }
+                let req_p = util.promisify(request)
+                let res;
+                try {
+                    res = await req_p(options)
+                } catch (err) { console.log('TWM: error pulling addedChannels status: ' + err) }
+                // channels in 'data' array with type=live are live, all others are not
+                let liveChannels = []
+                res.body.data.forEach(element => {
+                    if (element.type === 'live') {
+                        liveChannels.push(element.user_name.toLowerCase())
+                    }
+                })
+                addedChannels.forEach(channel => {
+                    if (liveChannels.includes(channel)) {
+                        Channels.findOneAndUpdate({ name: channel }, { live: true }, { useFindAndModify: false }).exec()
+                    }
+                })
+            }
+            // Pull 'user' data for addedChannels to enrich Channels collection. Will save:
+            // user_id, profile_image_url
+            {
+                let qs = new URLSearchParams()
+                addedChannels.forEach(element => {
+                    qs.append('login', element)
+                })
+                let options = {
+                    url: this.HelixEndpoints.Users + '?' + qs,
+                    json: true,
+                    headers: {
+                        'Client-ID': secrets.TWITCH_CLIENT_ID,
+                        'Authorization': this.TWITCH_API_TOKEN
+                    }
+                }
+                let req_p = util.promisify(request)
+                let res;
+                try {
+                    res = await req_p(options)
+                } catch (err) { console.log('TWM: error pulling addedChannels \'user\' data: ' + err) }
+                // debug: console.log('user data: ' + JSON.stringify(res.body))
+                await res.body.data.forEach(element => {
+                    let user_name = element.login
+                    let user_id = element.id
+                    let profile_image_url = element.profile_image_url
+
+                    Channels.findOneAndUpdate({ name: user_name }, { user_id, profile_image_url }, { useFindAndModify: false }).exec()
+                })
+                
+                }
         }
+
         
-        // Pull 'stream' data for addedChannels to save current live/non-live status
-        {
-            let qs = new URLSearchParams()
-            addedChannels.forEach(element => {
-                qs.append('user_login', element)
-            })
-            let options = {
-                url: this.HelixEndpoints.Streams + '?' + qs,
-                json: true,
-                headers: {
-                    'Client-ID': secrets.TWITCH_CLIENT_ID,
-                    'Authorization': this.TWITCH_API_TOKEN,
-                }
-            }
-            let req_p = util.promisify(request)
-            let res;
-            try {
-                res = await req_p(options)
-            } catch (err) { console.log('TWM: error pulling addedChannels status: ' + err) }
-            // channels in 'data' array with type=live are live, all others are not
-            let liveChannels = []
-            res.body.data.forEach(element => {
-                if (element.type === 'live') {
-                    liveChannels.push(element.user_name.toLowerCase())
-                }
-            })
-            addedChannels.forEach(channel => {
-                if (liveChannels.includes(channel)) {
-                    Channels.findOneAndUpdate({ name: channel }, { live: true }, { useFindAndModify: false }).exec()
-                }
-            })
-        }
-
-        // Pull 'user' data for addedChannels to save user_id
-        {
-            let qs = new URLSearchParams()
-            addedChannels.forEach(element => {
-                qs.append('login', element)
-            })
-            let options = {
-                url: this.HelixEndpoints.Users + '?' + qs,
-                json: true,
-                headers: {
-                    'Client-ID': secrets.TWITCH_CLIENT_ID,
-                    'Authorization': this.TWITCH_API_TOKEN
-                }
-            }
-            let req_p = util.promisify(request)
-            let res;
-            try {
-                res = await req_p(options)
-            } catch (err) { console.log('TWM: error pulling addedChannels \'user\' data: ' + err) }
-            // debug: console.log('user data: ' + JSON.stringify(res.body))
-            await res.body.data.forEach(element => {
-                let user_name = element.login
-                let user_id = element.id
-
-                Channels.findOneAndUpdate({ name: user_name }, { user_id: user_id }, { useFindAndModify: false }).exec()
-            })
-            
-        }
 
         // Subscribe to Webhook for status updates on all channels
         let callbackUrl = this.NGROK_URL || process.env.CALLBACK_URL
         console.log('callbackUrl: ' + callbackUrl)
-        var channels = Channels.find((err, docs) => {
+        Channels.find((err, docs) => {
             docs.forEach(async doc => {
                 console.log('doc: ' + JSON.stringify(doc))
                 let body = {
