@@ -37,7 +37,8 @@ class TwitchWebhookManager {
         } 
         // 1.b) send request
         request(options, (err, res, body) => {
-            if (err || res?.statusCode !== 200) console.log('TWM: error retrieving Twitch API token: ' + err)
+            if (err) console.log('TWM: error retrieving Twitch API token: ' + err)
+            else if (res?.statusCode !== 200) console.log('TWM: issue retrieving Twitch API token: ' + res)
             else {
                 // 1.c) Twitch API token retrieval was successful - save the token
                 this.TWITCH_API_TOKEN = 'Bearer ' + body.access_token
