@@ -136,12 +136,10 @@ class TwitchWebhookManager {
                 let req_p = util.promisify(request)
                 let res;
                 try {
-                    console.log('twitch headers: ' + JSON.stringify(this.TwitchHeaders))
                     res = await req_p(options)
                 } catch (err) { console.log('TWM: error pulling addedChannels status: ' + err) }
                 // channels in 'data' array with type=live are live, all others are not
                 let liveChannels = []
-                console.log('streams res: ' + JSON.stringify(res))
                 res.body.data.forEach(element => {
                     if (element.type === 'live') {
                         liveChannels.push(element.user_name.toLowerCase())
@@ -214,11 +212,10 @@ class TwitchWebhookManager {
 
                 let req_p = util.promisify(request)
                 let res
-                try {
-                    res = await req_p(options)
-                } catch (err) { return console.log('TWM: error subscribing to webhook: ' + err) }
+                try { res = await req_p(options) } 
+                catch (err) { return console.log('TWM: error subscribing to webhook: ' + err) }
                 if (res.statusCode === 202) { console.log('TWM: successfully subscribed to webhook for ' + doc.name) }
-                else { console.log('TWM: webhook subscription returned non-202: ' + JSON.stringify(res)) }
+                else { console.log('TWM: webhook subscription returned non-success: ' + JSON.stringify(res)) }
 
             })
         })

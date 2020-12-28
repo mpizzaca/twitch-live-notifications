@@ -1,22 +1,19 @@
 console.log('Service Worker loaded!')
 
-self.addEventListener('push', ev => {
-    const data = ev.data.json();
-    console.log('Got push', data);
-    const { title, body, icon, actions } = data;
-
+self.addEventListener('push', event => {
+    const mData = event.data.json();
+    console.log('Got push', mData);
+    const { title, icon, actions, data } = mData;
     
-
-    self.registration.showNotification(title, {
-        body,
-        icon,
-        actions
-    })
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            icon,
+            actions,
+            data
+        })
+    )
 })
 
 self.addEventListener('notificationclick', function(event) {
-    console.log('event: ' + JSON.stringify(event))
-    console.log('event.notification: ' + JSON.stringify(event.notification))
-    
-    //Clients.openWindow()
+    clients.openWindow(event.notification.data.url)
 })

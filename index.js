@@ -314,7 +314,8 @@ app.post('/streams/*', (req, res) => {
                 let payload = {
                     title: req.params['0'] + ' just went live!',
                     icon: doc.profile_image_url,
-                    actions: [{ action: 'watch', title: 'Watch now!'}]
+                    actions: [{ action: 'watch', title: 'Watch now!'}],
+                    data: { url: 'http://twitch.tv/' + req.params['0'] }
                 }
                 payload = JSON.stringify(payload)
 

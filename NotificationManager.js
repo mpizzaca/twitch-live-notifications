@@ -12,7 +12,6 @@ class NotificationManager {
     }
 
     sendNotification(pushSubscription, payload) {
-        
 
         this.webpush.sendNotification(pushSubscription, payload).then(result => {
             //console.log(result)
