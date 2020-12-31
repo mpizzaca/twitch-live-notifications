@@ -297,9 +297,10 @@ app.get('/streams/*', (req, res) => {
 
 app.post('/streams/*', (req, res) => {
     let live = (req.body.data[0]?.type === 'live')
+    let channelName = req.params['0']
     console.log('live: ' + live)
 
-    Channel.findOne({ name: req.params['0'] }, (err, doc) => {
+    Channel.findOne({ name: channelName }, (err, doc) => {
         if (err) {
             console.log('Error finding channel: ' + err)
             return res.send()
@@ -307,27 +308,25 @@ app.post('/streams/*', (req, res) => {
             // debug: console.log('doc: ' + doc)
             if (live && !doc.live) {
                 // channel just went live - send notification
-                console.log(req.params['0'] + ' just went live, sending notifications')
-                // TODO: send notification with payload to all users monitoring this channel
-                // TODO: pull all UserDatas where our channel in UserDatas.channels array
+                console.log(channelName + ' just went live, sending notifications')
 
                 let payload = {
-                    title: req.params['0'] + ' just went live!',
+                    title: channelName + ' just went live!',
                     icon: doc.profile_image_url,
                     actions: [{ action: 'watch', title: 'Watch now!'}],
-                    data: { url: 'http://twitch.tv/' + req.params['0'] }
+                    data: { url: 'http://twitch.tv/' + channelName }
                 }
                 payload = JSON.stringify(payload)
 
-                UserData.find({ channels: req.params['0']}, (err, res) => {
+                UserData.find({ channels: channelName}, (err, res) => {
                     if (err) { return console.log('Error pulling UserData to send notifications: ' + err) }
                     res.forEach(doc => {
                         notificationManager.sendNotification(doc.webpushSubscription, payload)
                     })
                 })
-            } else if (!live && doc.live) { console.log(req.params['0'] + ' just went offline') }
+            } else if (!live && doc.live) { console.log(channelName + ' just went offline') }
             // update 'channels' live status
-            Channel.findOneAndUpdate({ name: req.params['0'] }, { live: live }, { useFindAndModify: false }).exec()
+            Channel.findOneAndUpdate({ name: channelName }, { live: live }, { useFindAndModify: false }).exec()
             return res.send()
         }
     })
