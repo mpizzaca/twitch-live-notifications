@@ -1,29 +1,41 @@
-p welcome 
-    if user
-        b #{user.username}
+html
+    head
+        style
+            include style.css
+    body
+        div(class="flex-col")
+            div
+                p welcome 
+                    if user
+                        b #{user.username}
 
-if !user
-    form(action="/login")
-        button(type='submit') login
-    form(action='/register')
-        button(type='submit') register
-else
-    div
-        form(action="/channels" method="POST")
-            p channels: 
-                input(type="text" name="channels" value=user.channels)
-                a 
-                button(type="submit" value="save") save
-    
-    p #{message}
+            if !user
+                div
+                    form(action="/login")
+                        button(type='submit') login
+                    form(action='/register')
+                        button(type='submit') register
+            else
+                form(action="/channels" method="POST")
+                    div(class="flex-row")
+                        p(style={margin:'0 16px 0 0'}) channels: 
+                        div(class="flex-col")
+                            input(type="text" name="channels" value=user.channels)
+                            p(style={ color: 'grey', margin: '0px', 'font-size': '90%' }) comma-separated twitch channels, eg: summit1g,lirik,pestily
+                        button(type="submit" value="save" style={margin: '0 0 0 16px'}) save
 
-    p notifications enabled: 
-        input(type="checkbox" id="notifications-checkbox" checked=user.notificationsEnabled)
-    
-    form(action="/notify" method="POST")
-        button(type="submit" id="send-test-notification-button" ) send test notification
+                if message
+                    p #{message}
 
-    form(action='/logout')
-        button(type='submit') logout
+                div
+                    p(style={margin: '0 0 16px 0'}) notifications enabled: 
+                        input(type="checkbox" id="notifications-checkbox" checked=user.notificationsEnabled)
+                    
+                    form(action="/notify" method="POST")
+                        button(type="submit" id="send-test-notification-button" ) send test notification
 
-script(type="application/javascript" src="/client.js" crossorigin="anonymous")
+                    div
+                    form(action='/logout')
+                        button(type='submit') logout
+
+            script(type="application/javascript" src="/client.js" crossorigin="anonymous")
