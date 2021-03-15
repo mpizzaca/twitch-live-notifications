@@ -6,14 +6,15 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const mongoose = require('mongoose');
 const passport = require('passport');
-const LogRequest = require('./logRequest');
 const bcrypt = require('bcrypt');
 const path = require('path');
 require('./config/passport')(passport);
 
+// local modules
 const TwitchWebhookManager = require('./TwitchWebhookManager');
 const NotificationManager = require('./NotificationManager');
 const { Users, UserData, Channel } = require('./models');
+const LogRequest = require('./logRequest');
 
 let TWITCH_API_LEASE_SECONDS
 
@@ -137,13 +138,13 @@ app.post('/register', (req, res) => {
   if (errors.length > 0) {
     return res.send(errors)
   } else {
-    User.findOne({ username: username }).exec((err, user) => {
+    Users.findOne({ username: username }).exec((err, user) => {
       if (user) {
         errors.push({ msg: 'Username already in use' })
         return res.send(errors + user)
       } else {
         // new user
-        const newUser = new User({
+        const newUser = new Users({
           username,
           password
         })
@@ -239,7 +240,7 @@ app.get('/subscribe', (req, res) => {
   }
 })
 
-// User enabled notifications. 
+// Users enabled notifications. 
 // Request will contain WebPush subscription necessary to send the notification.
 app.post('/subscribe', (req, res) => {
   if (req.isAuthenticated()) {
