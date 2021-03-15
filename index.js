@@ -8,13 +8,13 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const path = require('path');
-require('./config/passport')(passport);
 
 // local modules
 const TwitchWebhookManager = require('./TwitchWebhookManager');
 const NotificationManager = require('./NotificationManager');
 const { Users, UserData, Channel } = require('./models');
 const LogRequest = require('./logRequest');
+require('./config/passport')(passport);
 
 let TWITCH_API_LEASE_SECONDS
 
@@ -338,3 +338,5 @@ app.listen(process.env.PORT || 3005, () => {
   if (process.env.PORT == undefined) console.log('Server is running on localhost:3005')
   else console.log('Server is running')
 })
+
+module.exports = { app };
