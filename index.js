@@ -1,6 +1,8 @@
+// setup dotenv
+require('dotenv').config();
+
 // npm modules
 const express = require('express');
-const webpush = require('web-push');
 const favicon = require('serve-favicon');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -8,34 +10,28 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const path = require('path');
+const morgan = require('morgan');
 
 // local modules
 const TwitchWebhookManager = require('./TwitchWebhookManager');
 const NotificationManager = require('./NotificationManager');
 const { Users, UserData, Channel } = require('./models');
-const LogRequest = require('./logRequest');
 require('./config/passport')(passport);
 
-let TWITCH_API_LEASE_SECONDS
+const TWITCH_API_LEASE_SECONDS = process.env.NODE_ENV === 'production' ? 300 : 30;
 
-if (process.env.NODE_ENV != 'production') TWITCH_API_LEASE_SECONDS = 30
-else TWITCH_API_LEASE_SECONDS = 300
-
-// setup dev environment
-var secrets;
-if (process.env.NODE_ENV != 'production') {
-  secrets = require('./secrets')
-  //mongoose.set('debug', true)
-}
 // configure mongoose
-const dbUrl = process.env.MONGODB_URL || secrets.MONGODB_URL
-mongoose.connect(dbUrl, {
+mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-})
+});
 // set NotificationManager, TwitchWebhookManager
-const notificationManager = new NotificationManager(webpush)
+const notificationManager = new NotificationManager()
 const twitchWebhookManager = new TwitchWebhookManager(TWITCH_API_LEASE_SECONDS)
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
 // setup recurring webhook subscriptions (wait 10s before first, then run every time webhook expires)
 setTimeout(() => {
@@ -48,6 +44,7 @@ setTimeout(() => {
 // create the server
 const app = express();
 
+
 // add & configure middleware
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json())
@@ -56,8 +53,7 @@ try {
 } catch (err) {
 
 }
-app.use(express.urlencoded({ extended: true }))
-app.use(LogRequest)
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.EXPRESS_SESSION_SECRET || secrets.EXPRESS_SESSION_SECRET,
   resave: false,

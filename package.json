@@ -6,9 +6,16 @@
   "engines": {
     "node": "14.x"
   },
+  "eslintConfig": {
+    "env": {
+      "mocha": true,
+      "es6": true
+    }
+  },
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon",
+    "test": "mocha --exit"
   },
   "repository": {
     "type": "git",
@@ -24,12 +31,15 @@
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "connect-mongo": "^3.2.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "flash": "^1.1.0",
     "mongodb": "^3.6.3",
     "mongoose": "^5.10.15",
+    "morgan": "^1.10.0",
     "ngrok": "^3.3.0",
+    "npm": "^7.6.3",
     "os": "^0.1.1",
     "passport": "git+https://github.com/mpizzaca/passport.git",
     "passport-local": "^1.0.0",
@@ -39,5 +49,12 @@
     "serve-favicon": "^2.5.0",
     "uuid": "^8.3.1",
     "web-push": "^3.4.4"
+  },
+  "devDependencies": {
+    "chai-http": "^4.3.0",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "nodemon": "^2.0.7"
   }
 }
