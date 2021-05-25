@@ -74,8 +74,6 @@ class TwitchWebhookManager {
   }
 
   search(query) {
-    console.log("url:", this.HELIX_ENDPOINTS.SearchChannels);
-    console.log("query:", query);
     return axios
       .get(this.HELIX_ENDPOINTS.SearchChannels, {
         params: {
@@ -83,7 +81,7 @@ class TwitchWebhookManager {
         },
         headers: this.TwitchHeaders,
       })
-      .then((res) => res.data);
+      .then((res) => res.data.data);
   }
 
   // Subscribes to Twitch webhook updates for all subscribed-to channels
