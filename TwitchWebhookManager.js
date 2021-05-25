@@ -239,6 +239,10 @@ class TwitchWebhookManager {
   subToWebhooks() {
     let callbackUrl = this.NGROK_URL || process.env.CALLBACK_URL;
     console.log("callbackUrl: " + callbackUrl);
+    if (!callbackUrl)
+      return console.error(
+        "TWM: cancelling webhook subscriptions - no valid callback URL"
+      );
     Channels.find((err, docs) => {
       docs.forEach(async (doc) => {
         console.log("doc: " + JSON.stringify(doc));
