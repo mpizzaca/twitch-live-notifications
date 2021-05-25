@@ -209,6 +209,9 @@ app.get("/channels", (req, res) => {
       .catch((err) => console.log(err));
   } else {
     // Return all channels the user is getting notifications for
+    UserData.findOne({ username: req.user.username })
+      .then((result) => res.send(result.channels))
+      .catch((err) => res.status(500).send(err));
   }
 });
 
