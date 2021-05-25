@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/mpizzaca/twitch-live-notifications#readme",
   "dependencies": {
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "connect-mongo": "^3.2.0",
