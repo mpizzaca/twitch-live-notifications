@@ -3,6 +3,7 @@ require("dotenv").config();
 
 // npm modules
 const express = require("express");
+const cors = require("cors");
 const favicon = require("serve-favicon");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
@@ -32,6 +33,7 @@ const twitchWebhookManager = new TwitchWebhookManager(TWITCH_API_LEASE_SECONDS);
 
 // create the server
 const app = express();
+app.use(cors());
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
@@ -188,16 +190,26 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/channels", (req, res) => {
-  if (!req.query.name) {
-    return res
-      .status(400)
-      .send("Must include search query (e.g. /channels?name=channelname)");
+  if (!req.isAuthenticated()) {
+    return res.status(401).send();
   }
 
-  twitchWebhookManager
-    .search(req.query.name)
-    .then((result) => res.send(result))
-    .catch((err) => console.log(err));
+  // If 'name' query param is present -> we're searching all Twitch channels
+  if (req.query.name) {
+    twitchWebhookManager
+      .search(req.query.name)
+      .then((result) =>
+        result.map((channel) => ({
+          name: channel.display_name,
+          avatar_url: channel.thumbnail_url,
+          live: channel.is_live,
+        }))
+      )
+      .then((result) => res.send(result))
+      .catch((err) => console.log(err));
+  } else {
+    // Return all channels the user is getting notifications for
+  }
 });
 
 app.post("/channels", (req, res) => {
