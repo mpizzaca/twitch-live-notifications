@@ -25,10 +25,7 @@ export class ChannelService {
     this.http
       .get<Channel[]>(this.channelsURL, this.httpOptions)
       .subscribe((channels) => {
-        channels = channels.map((channel) => {
-          channel.subscribed = true;
-          return channel;
-        });
+        channels = channels.map(this.setSubscribed);
         this.channels.next(channels);
       });
   }
@@ -45,22 +42,34 @@ export class ChannelService {
   }
 
   subscribe(channel: Channel): void {
-    console.log('Channel service - current channels: ', this.channels);
-    console.log('Channel service - subscribing to channel: ', channel);
     this.http
       .post<Channel[]>(`${this.channelsURL}`, { channel }, this.httpOptions)
       .subscribe(
-        () => {
-          console.log('Channel service - subscription successful');
-          this.channels.next([...this.channels.value, channel]);
-          console.log('Channel service - new channels: ', this.channels);
+        (result) => {
+          result = result.map(this.setSubscribed);
+          this.channels.next(result);
         },
         (err) => console.error('Error subscribing: ', err)
       );
   }
 
-  unsubscribe(channel: Channel): Observable<Channel> {
-    // TODO: implement
-    return of(channel);
+  unsubscribe(channel: Channel): void {
+    this.http
+      .delete<Channel[]>(
+        `${this.channelsURL}/${channel.name}`,
+        this.httpOptions
+      )
+      .subscribe((result) => {
+        result = result.map((channel) => {
+          channel.subscribed = true;
+          return channel;
+        });
+        this.channels.next(result);
+      });
+  }
+
+  private setSubscribed(channel: Channel): Channel {
+    channel.subscribed = true;
+    return channel;
   }
 }

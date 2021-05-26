@@ -30,14 +30,13 @@ export class ChannelSearchComponent implements OnInit {
       distinctUntilChanged(),
       switchMap((term: string) => this.channelService.searchChannels(term)),
       map((channels) => {
-        channels.map((channel) => {
-          channel.subscribed =
-            this.channelService.channels.value.filter((existingChannel) => {
-              return existingChannel.name === channel.name;
-            }).length > 0;
-          return channel;
-        });
-        return channels;
+        // filter already subscribed-to channels from search results
+        return channels.filter(
+          (channel) =>
+            this.channelService.channels.value.filter(
+              (existingChannel) => existingChannel.name === channel.name
+            ).length === 0
+        );
       })
     );
   }
