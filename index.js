@@ -4,21 +4,22 @@ require("dotenv").config();
 // npm modules
 const express = require("express");
 const cors = require("cors");
-const favicon = require("serve-favicon");
-const session = require("express-session");
-const MongoStore = require("connect-mongo")(session);
 const mongoose = require("mongoose");
-const passport = require("passport");
-const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const path = require("path");
 const morgan = require("morgan");
-const request = require("request");
 
 // local modules
-const TwitchWebhookManager = require("./TwitchWebhookManager");
+const TwitchAPIManager = require("./TwitchAPIManager");
 const { sendNotification } = require("./NotificationManager");
-const { Users, UserData, Channel } = require("./models");
-require("./config/passport")(passport);
+const { Users } = require("./models");
+
+// middleware imports
+const { isAuthenticated } = require("./middleware");
+
+// route imports
+const UserRoutes = require("./routes/UserRoutes");
+const ChannelRoutes = require("./routes/ChannelRoutes");
 
 const TWITCH_API_LEASE_SECONDS =
   process.env.NODE_ENV === "production" ? 300 : 30;
@@ -28,8 +29,6 @@ mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-const twitchWebhookManager = new TwitchWebhookManager(TWITCH_API_LEASE_SECONDS);
 
 // create the server
 const app = express();
@@ -41,231 +40,23 @@ if (process.env.NODE_ENV !== "production") {
 
 // setup recurring webhook subscriptions (wait 10s before first, then run every time webhook expires)
 setTimeout(() => {
-  twitchWebhookManager.SubscribeToChannelUpdates();
+  TwitchAPIManager.subscribeToChannelUpdates();
   setInterval(() => {
-    twitchWebhookManager.SubscribeToChannelUpdates();
+    TwitchAPIManager.subscribeToChannelUpdates();
   }, TWITCH_API_LEASE_SECONDS * 1000);
 }, 10000);
 
 // add & configure middleware
-app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
-try {
-  app.use(favicon(path.join(__dirname, "public", "favicon", "favicon.ico")));
-} catch (err) {}
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  session({
-    secret:
-      process.env.EXPRESS_SESSION_SECRET || secrets.EXPRESS_SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    store: new MongoStore({ mongooseConnection: mongoose.connection }),
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
 
-app.set("view engine", "pug");
-app.set("views", path.join(__dirname, "views"));
+// configure routes
+app.use(UserRoutes);
+app.use(ChannelRoutes);
 
 //*******************//
 //     ENDPOINTS     //
 //*******************//
-app.get("/", (req, res) => {
-  if (req.isAuthenticated()) {
-    UserData.findOne({ username: req.user.username }, (err, doc) => {
-      if (doc) {
-        // convert mongoose document to javascript object & stringify channels, can't do in pug
-        doc = doc.toObject();
-        doc.channels = doc.channels.join(",");
-
-        res.render("home", { user: doc });
-      } else if (err) {
-        console.log("Error: " + JSON.stringify(err));
-      } else {
-        // user is authenticated but no UserData exists -- somethings gone wrong
-        console.log(
-          "Error on GET / : user is authenticated but no UserData could be found"
-        );
-        console.log("req.user: " + JSON.stringify(req.user));
-      }
-    });
-  } else {
-    res.render("home");
-  }
-});
-
-app.get("/login", (req, res) => {
-  res.render("login");
-});
-
-app.post("/login", (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      // authentication failed
-      console.log(
-        "login for " + req.body.username + " failed: " + JSON.stringify(info)
-      );
-      return res.render("login", { fail: true, message: info.message });
-    }
-
-    req.login(user, (err) => {
-      if (err) throw err;
-      res.redirect("/");
-    });
-  })(req, res, next);
-});
-
-app.get("/register", (req, res) => {
-  if (req.isAuthenticated()) res.redirect("/");
-
-  res.render("register");
-});
-
-app.post("/register", (req, res) => {
-  console.log("req.body: " + JSON.stringify(req.body));
-
-  const { username, password } = req.body;
-  let errors = [];
-
-  if (!username || !password) {
-    errors.push({ msg: "All fields are required" });
-  }
-  if (password?.length < 7) {
-    errors.push({ msg: "Password must be at least 7 characters" });
-  }
-
-  if (errors.length > 0) {
-    return res.send(errors);
-  } else {
-    Users.findOne({ username: username }).exec((err, user) => {
-      if (user) {
-        errors.push({ msg: "Username already in use" });
-        return res.send(errors + user);
-      } else {
-        // new user
-        const newUser = new Users({
-          username,
-          password,
-        });
-
-        // hash password
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-            newUser
-              .save()
-              .then((value) => {
-                res.redirect("/login");
-              })
-              .catch((value) => console.log(value));
-          });
-        });
-
-        // create new UserData
-        const newUserData = new UserData({ username }).save();
-      }
-    });
-  }
-});
-
-app.get("/user/:username", (req, res) => {
-  if (req.isAuthenticated() && req.user.username === req.params.username) {
-    res.send("this is your private profile");
-  } else {
-    res.status(401).send("you are not authorized to view this page");
-  }
-});
-
-app.get("/logout", (req, res) => {
-  if (req.isAuthenticated()) {
-    req.logout();
-  }
-  res.redirect("/");
-});
-
-app.get("/channels", (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).send();
-  }
-
-  // If 'name' query param is present -> we're searching all Twitch channels
-  if (req.query.name) {
-    twitchWebhookManager
-      .search(req.query.name)
-      .then((result) =>
-        result.map((channel) => ({
-          name: channel.display_name,
-          avatar_url: channel.thumbnail_url,
-          live: channel.is_live,
-        }))
-      )
-      .then((result) => res.send(result))
-      .catch((err) => console.log(err));
-  } else {
-    // Return all channels the user is getting notifications for
-    UserData.findOne({ username: req.user.username })
-      .then((result) => res.send(result.channels))
-      .catch((err) => res.status(500).send(err));
-  }
-});
-
-app.post("/channels", (req, res) => {
-  // authenticate
-  if (!req.isAuthenticated()) res.status(401).send();
-
-  // validate request / cleanup channels
-  const tmp = req.body.channels;
-  var channels = [];
-  try {
-    channels = tmp
-      .replace(/[^A-Za-z0-9,]/g, "")
-      .toLowerCase()
-      .split(",")
-      .filter((ele) => {
-        return ele != null && ele != "";
-      });
-  } catch (e) {
-    // handle errors
-    console.log("error creating channels array: " + e);
-    res.render("home", { message: "error updating channels" });
-  }
-
-  const filter = { username: req.user.username };
-  const update = { channels: channels };
-
-  // create/update UserData
-  UserData.findOneAndUpdate(
-    filter,
-    update,
-    { new: true, useFindAndModify: false },
-    (err, doc) => {
-      if (!err && doc) {
-        // updated UserData channels
-        res.redirect("/");
-      } else if (!err && !doc) {
-        // save new UserData document
-        new UserData({
-          username: req.user.username,
-          channels,
-        })
-          .save()
-          .then((newDoc) => {
-            res.redirect("/");
-          });
-      } else {
-        // handle error
-        console.log("error finding/updating UserData channels: " + err);
-        res.render("home", { message: "error updating channels" });
-      }
-    }
-  );
-});
 
 app.get("/subscribe", (req, res) => {
   if (!req.isAuthenticated()) {
@@ -340,7 +131,7 @@ app.post("/notify", (req, res) => {
 });
 
 app.get("/test", (req, res) => {
-  twitchWebhookManager.SubscribeToChannelUpdates();
+  TwitchAPIManager.subscribeToChannelUpdates();
   return res.redirect("/");
 });
 
