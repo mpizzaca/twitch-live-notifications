@@ -25,24 +25,16 @@ export class ChannelSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('ngOnInit');
     this.channels$ = this.searchTerms.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       switchMap((term: string) => this.channelService.searchChannels(term)),
       map((channels) => {
         channels.map((channel) => {
-          console.log(
-            'this.channelService.channels',
-            this.channelService.channels
-          );
-          channel.add = !(
-            this.channelService.channels.filter((existingChannel) => {
-              console.log('existingChannel', existingChannel);
-              console.log('channel', channel);
+          channel.subscribed =
+            this.channelService.channels.value.filter((existingChannel) => {
               return existingChannel.name === channel.name;
-            }).length > 0
-          );
+            }).length > 0;
           return channel;
         });
         return channels;

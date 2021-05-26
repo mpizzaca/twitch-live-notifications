@@ -9,7 +9,7 @@ import { Channel } from './channel';
 })
 export class ChannelService {
   private channelsURL = 'http://localhost:3005/channels';
-  channels: Channel[] = [];
+  channels = new BehaviorSubject<Channel[]>([]);
 
   httpOptions = {
     headers: new HttpHeaders({
@@ -21,10 +21,16 @@ export class ChannelService {
 
   constructor(private http: HttpClient) {}
 
-  getChannels(): Observable<Channel[]> {
-    return this.http
+  getChannels(): void {
+    this.http
       .get<Channel[]>(this.channelsURL, this.httpOptions)
-      .pipe(tap((channels) => (this.channels = channels)));
+      .subscribe((channels) => {
+        channels = channels.map((channel) => {
+          channel.subscribed = true;
+          return channel;
+        });
+        this.channels.next(channels);
+      });
   }
 
   searchChannels(term: string): Observable<Channel[]> {
@@ -36,5 +42,25 @@ export class ChannelService {
       `${this.channelsURL}/?name=${term}`,
       this.httpOptions
     );
+  }
+
+  subscribe(channel: Channel): void {
+    console.log('Channel service - current channels: ', this.channels);
+    console.log('Channel service - subscribing to channel: ', channel);
+    this.http
+      .post<Channel[]>(`${this.channelsURL}`, { channel }, this.httpOptions)
+      .subscribe(
+        () => {
+          console.log('Channel service - subscription successful');
+          this.channels.next([...this.channels.value, channel]);
+          console.log('Channel service - new channels: ', this.channels);
+        },
+        (err) => console.error('Error subscribing: ', err)
+      );
+  }
+
+  unsubscribe(channel: Channel): Observable<Channel> {
+    // TODO: implement
+    return of(channel);
   }
 }

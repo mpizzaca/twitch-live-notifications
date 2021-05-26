@@ -10,19 +10,15 @@ import { Channel } from '../channel';
 export class ChannelsComponent implements OnInit {
   channels: Channel[] = [];
 
-  constructor(private channelService: ChannelService) {}
+  constructor(private channelService: ChannelService) {
+    // Subscribe to updates to the channelService 'channels' array.
+    this.channelService.channels.subscribe(
+      (channels) => (this.channels = channels)
+    );
+  }
 
   ngOnInit(): void {
-    this.getChannels();
-  }
-
-  getChannels(): void {
-    this.channelService
-      .getChannels()
-      .subscribe((channels) => (this.channels = channels));
-  }
-
-  get CurrentChannels(): Channel[] {
-    return this.channels;
+    console.log('app-channels ngOnInit()');
+    this.channelService.getChannels();
   }
 }
