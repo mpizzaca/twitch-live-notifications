@@ -52,7 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // configure routes
 app.use(UserRoutes);
-app.use(ChannelRoutes);
+app.use(isAuthenticated, ChannelRoutes);
 
 //*******************//
 //     ENDPOINTS     //

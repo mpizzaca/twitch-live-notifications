@@ -1,9 +1,8 @@
 const router = require("express").Router();
 const { Users } = require("../models");
-const { isAuthenticated } = require("../middleware");
 const TwitchAPIManager = require("../TwitchAPIManager");
 
-router.get("/channels", isAuthenticated, (req, res) => {
+router.get("/channels", (req, res) => {
   const { userID } = res.locals.token;
 
   // If 'name' query param is present -> we're searching all Twitch channels
@@ -26,24 +25,26 @@ router.get("/channels", isAuthenticated, (req, res) => {
   }
 });
 
-router.post("/channels", isAuthenticated, (req, res) => {
+// Subscribe to a channel
+router.post("/channels", (req, res) => {
   const { userID } = res.locals.token;
-  const { channelName } = req.body;
+  const { channel } = req.body;
 
-  if (!channelName) {
-    return res.status(400).send({ message: "channelName is required" });
+  if (!channel) {
+    return res.status(400).send({ message: "channel is required" });
   }
 
   Users.findOne({ _id: userID })
     .then((user) => {
       // Check that channel isn't in user's channels array
       if (
-        user.channels.filter((channel) => channel.name === channelName).length >
-        0
+        user.channels.filter(
+          (existingChannel) => existingChannel.name === channel.name
+        ).length > 0
       ) {
         return Promise.reject({
           status: 400,
-          message: `User is already subscribed to notifications for channel ${channelName}`,
+          message: `User is already subscribed to notifications for channel ${channel.name}`,
         });
       }
     })
@@ -51,11 +52,11 @@ router.post("/channels", isAuthenticated, (req, res) => {
       // Add the channel to the user's channels array
       Users.findOneAndUpdate(
         { _id: userID },
-        { $push: { channels: { name: channelName } } }
+        { $push: { channels: { ...channel } } }
       )
     )
     .then(() => Users.findOne({ _id: userID }))
-    .then((user) => res.send(user))
+    .then((user) => res.send(user.channels))
     .catch((err) => {
       if (err.message && err.status) {
         res.status(err.status).send({ message: err.message });
@@ -64,5 +65,8 @@ router.post("/channels", isAuthenticated, (req, res) => {
       }
     });
 });
+
+// Unsubscribe from a channel
+router.delete("/channels", (req, res) => {});
 
 module.exports = router;
