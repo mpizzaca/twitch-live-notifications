@@ -1,0 +1,12 @@
+<div class="channel-list__list-item">
+  <div>
+    <img src={{channel?.avatarURL}} alt={{channel?.name}} />
+    <span>{{channel?.name}}</span>
+  </div>
+  <div class="list-item__right">
+    <span *ngIf="channel?.live" class="status">LIVE</span>
+    <div class="list-item__add-channel-button">
+      <button *ngIf="channel?.add">+</button>
+    </div>
+  </div>
+</div>

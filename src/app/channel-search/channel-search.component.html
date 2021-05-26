@@ -1,0 +1,9 @@
+<div>
+  <label for="channel-search">Channel Search</label>
+  <input id="search-box" #searchBox (input)="search(searchBox.value)">
+  <ul>
+    <li *ngFor="let channel of channels$ | async">
+      <app-channel-list-item [channel]="channel"></app-channel-list-item>
+    </li>
+  </ul>
+</div>
