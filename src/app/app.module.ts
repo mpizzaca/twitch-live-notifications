@@ -16,12 +16,16 @@ import { environment } from '../environments/environment';
     ChannelsComponent,
     ChannelSearchComponent,
   ],
-  imports: [BrowserModule, HttpClientModule, ServiceWorkerModule.register('ngsw-worker.js', {
-  enabled: environment.production,
-  // Register the ServiceWorker as soon as the app is stable
-  // or after 30 seconds (whichever comes first).
-  registrationStrategy: 'registerWhenStable:30000'
-})],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    ServiceWorkerModule.register('./main-service-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the app is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
+  ],
   providers: [ChannelsComponent],
   bootstrap: [AppComponent],
 })
