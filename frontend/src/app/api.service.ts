@@ -10,6 +10,7 @@ import { Channel } from './channel';
 export class ApiService {
   private readonly ENDPOINTS = {
     channels: 'http://localhost:3005/channels',
+    subscription: 'http://localhost:3005/subscription',
   };
 
   constructor(private http: HttpClient, private userService: UserService) {}
@@ -34,5 +35,15 @@ export class ApiService {
       { channel },
       this.userService.httpOptions
     );
+  }
+
+  sendPushSubscription(sub: PushSubscription): void {
+    this.http
+      .post(
+        this.ENDPOINTS.subscription,
+        { webpushSubscription: sub },
+        this.userService.httpOptions
+      )
+      .subscribe();
   }
 }
