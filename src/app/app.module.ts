@@ -6,6 +6,8 @@ import { AppComponent } from './app.component';
 import { ChannelListItemComponent } from './channel-list-item/channel-list-item.component';
 import { ChannelsComponent } from './channels/channels.component';
 import { ChannelSearchComponent } from './channel-search/channel-search.component';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -14,7 +16,12 @@ import { ChannelSearchComponent } from './channel-search/channel-search.componen
     ChannelsComponent,
     ChannelSearchComponent,
   ],
-  imports: [BrowserModule, HttpClientModule],
+  imports: [BrowserModule, HttpClientModule, ServiceWorkerModule.register('ngsw-worker.js', {
+  enabled: environment.production,
+  // Register the ServiceWorker as soon as the app is stable
+  // or after 30 seconds (whichever comes first).
+  registrationStrategy: 'registerWhenStable:30000'
+})],
   providers: [ChannelsComponent],
   bootstrap: [AppComponent],
 })
