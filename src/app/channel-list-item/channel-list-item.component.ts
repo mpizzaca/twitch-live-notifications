@@ -13,9 +13,7 @@ export class ChannelListItemComponent implements OnInit {
 
   constructor(private channelService: ChannelService) {}
 
-  ngOnInit(): void {
-    console.log('Channel init: ', this.channel);
-  }
+  ngOnInit(): void {}
 
   subscribe(channel: Channel): void {
     this.channelService.subscribe(channel);
