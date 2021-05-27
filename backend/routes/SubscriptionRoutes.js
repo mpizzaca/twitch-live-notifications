@@ -14,7 +14,22 @@ router.post("/subscription", (req, res) => {
     .then(() => {
       res.send();
     })
-    .catch((err) => res.status(500).send(err));
+    .catch((err) =>
+      res.status(500).send({ message: `Error saving PushSubscription: ${err}` })
+    );
+});
+
+// Delete a user's PushSubscription
+router.delete("/subscription", (req, res) => {
+  const { userID } = res.locals.token;
+
+  Users.findOneAndUpdate({ _id: userID }, { webpushSubscription: null })
+    .then(() => res.send())
+    .catch((err) =>
+      res
+        .status(500)
+        .send({ message: `Error deleting PushSubscription: ${err}` })
+    );
 });
 
 module.exports = router;
