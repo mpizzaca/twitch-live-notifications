@@ -20,6 +20,7 @@ const { isAuthenticated } = require("./middleware");
 // route imports
 const UserRoutes = require("./routes/UserRoutes");
 const ChannelRoutes = require("./routes/ChannelRoutes");
+const SubscriptionRoutes = require("./routes/SubscriptionRoutes");
 
 const TWITCH_API_LEASE_SECONDS =
   process.env.NODE_ENV === "production" ? 300 : 30;
@@ -53,6 +54,7 @@ app.use(express.urlencoded({ extended: true }));
 // configure routes
 app.use(UserRoutes);
 app.use(isAuthenticated, ChannelRoutes);
+app.use(isAuthenticated, SubscriptionRoutes);
 
 //*******************//
 //     ENDPOINTS     //

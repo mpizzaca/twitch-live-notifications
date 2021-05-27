@@ -1,10 +1,9 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { isAuthenticated } = require("../middleware");
 const { Users } = require("../models");
 
-router.post("/login", isAuthenticated, (req, res) => {
+router.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
