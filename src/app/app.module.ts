@@ -8,6 +8,7 @@ import { ChannelsComponent } from './channels/channels.component';
 import { ChannelSearchComponent } from './channel-search/channel-search.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { NotificationComponent } from './notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { environment } from '../environments/environment';
     ChannelListItemComponent,
     ChannelsComponent,
     ChannelSearchComponent,
+    NotificationComponent,
   ],
   imports: [
     BrowserModule,
