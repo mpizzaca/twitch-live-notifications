@@ -1,0 +1,12 @@
+h1 login
+form(action="/login" method="post")
+    p username: 
+        input(type='text' name='username' autocomplete='username')
+    p password: 
+        input(type='password' name='password' autocomplete='current-password')
+    input(type='submit', value='login')
+
+if (fail)
+    p login failed: #{message}
+
+a(href='/') home
