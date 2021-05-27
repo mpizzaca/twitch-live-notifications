@@ -29,9 +29,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest",
-              "src/main-service-worker.js",
-              "src/notifications-worker.js"
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss"
@@ -102,9 +100,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest",
-              "src/app/main-service-worker.js",
-              "src/app/notifications-worker.js"
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss"

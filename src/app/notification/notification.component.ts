@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { SwPush } from '@angular/service-worker';
-import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notification',
@@ -24,6 +23,7 @@ export class NotificationComponent implements OnInit {
 
   subscribeToPushNotifications(): void {
     console.log('swPush.subscription', this.swPush.subscription);
+    console.log('swPush.isEnabled', this.swPush.isEnabled);
     this.swPush
       .requestSubscription({
         serverPublicKey: this.PUBLIC_VAPID_KEY,
