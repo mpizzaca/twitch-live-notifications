@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Channel } from './channel';
+import { UserService } from './user.service';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,23 +13,17 @@ export class ChannelService {
   private channelsURL = 'http://localhost:3005/channels';
   channels = new BehaviorSubject<Channel[]>([]);
 
-  httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2MGFkODI4M2FjNGFkYjNkOTExMjg2NzciLCJpYXQiOjE2MjE5OTUxOTJ9.tzGjx5v1qYWB2TWi4-Gi3gFqdMMiRqINg3TtiX4sZo0',
-    }),
-  };
-
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private userService: UserService,
+    private apiService: ApiService
+  ) {}
 
   getChannels(): void {
-    this.http
-      .get<Channel[]>(this.channelsURL, this.httpOptions)
-      .subscribe((channels) => {
-        channels = channels.map(this.setSubscribed);
-        this.channels.next(channels);
-      });
+    this.apiService.getChannels().subscribe((channels) => {
+      channels = channels.map(this.setSubscribed);
+      this.channels.next(channels);
+    });
   }
 
   searchChannels(term: string): Observable<Channel[]> {
@@ -35,29 +31,24 @@ export class ChannelService {
       return of([]);
     }
 
-    return this.http.get<Channel[]>(
-      `${this.channelsURL}/?name=${term}`,
-      this.httpOptions
-    );
+    return this.apiService.getChannelsByName(term);
   }
 
   subscribe(channel: Channel): void {
-    this.http
-      .post<Channel[]>(`${this.channelsURL}`, { channel }, this.httpOptions)
-      .subscribe(
-        (result) => {
-          result = result.map(this.setSubscribed);
-          this.channels.next(result);
-        },
-        (err) => console.error('Error subscribing: ', err)
-      );
+    this.apiService.subscribeToChannel(channel).subscribe(
+      (result) => {
+        result = result.map(this.setSubscribed);
+        this.channels.next(result);
+      },
+      (err) => console.error('Error subscribing: ', err)
+    );
   }
 
   unsubscribe(channel: Channel): void {
     this.http
       .delete<Channel[]>(
         `${this.channelsURL}/${channel.name}`,
-        this.httpOptions
+        this.userService.httpOptions
       )
       .subscribe((result) => {
         result = result.map((channel) => {
