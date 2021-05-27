@@ -46,4 +46,10 @@ export class ApiService {
       )
       .subscribe();
   }
+
+  deletePushSubscription(): void {
+    this.http
+      .delete(this.ENDPOINTS.subscription, this.userService.httpOptions)
+      .subscribe();
+  }
 }

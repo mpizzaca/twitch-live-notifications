@@ -42,7 +42,10 @@ export class NotificationService {
   dropSubscription(): void {
     this.swPush
       .unsubscribe()
-      .then((res) => console.log('NotificationService: Unsubscribed', res))
+      .then(() => {
+        console.log('NotificationService: Unsubscribed');
+        this.apiService.deletePushSubscription();
+      })
       .catch((err) =>
         console.log('NotificationService: Error unsubscribing', err)
       );
