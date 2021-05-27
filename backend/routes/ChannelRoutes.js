@@ -67,17 +67,17 @@ router.post("/channels", (req, res) => {
 });
 
 // Unsubscribe from a channel
-router.delete("/channels", (req, res) => {
+router.delete("/channels/:channelName", (req, res) => {
   const { userID } = res.locals.token;
-  const { channel } = req.body;
+  const { channelName } = req.params;
 
-  if (!channel) {
+  if (!channelName) {
     return res.status(400).send({ message: "channel is required" });
   }
 
   Users.findOneAndUpdate(
     { _id: userID },
-    { $pull: { channels: { name: channel.name } } }
+    { $pull: { channels: { name: channelName } } }
   )
     .then(() => Users.findOne({ _id: userID }))
     .then((user) => res.send(user.channels))

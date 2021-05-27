@@ -72,11 +72,9 @@ const search = (query) => {
 // Subscribes to Twitch webhook updates for all subscribed-to channels
 // runs on interval = TWITCH_API_LEASE_SECONDS
 const subscribeToChannelUpdates = async () => {
-  Users.distinct("channels")
-    .exec()
-    .then((res) =>
-      console.log("SubscribeToChannelUpdates Users distinct: ", res)
-    );
+  Users.distinct("channels.name").then((res) =>
+    console.log("SubscribeToChannelUpdates Users distinct: ", res)
+  );
 
   // Get all unique channels from userdatas collection = newChannels
   var newChannels;

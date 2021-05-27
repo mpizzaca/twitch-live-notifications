@@ -69,7 +69,7 @@ app.get("/subscribe", (req, res) => {
       if (doc) {
         console.log(doc.webpushSubscription);
         return res.send(doc.webpushSubscription);
-      } // || JSON.stringify({}))}
+      }
     });
   }
 });
