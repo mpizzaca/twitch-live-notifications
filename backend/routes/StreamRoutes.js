@@ -32,9 +32,6 @@ router.post("/streams/:channelName", (req, res) => {
         );
         const wasLive = user.channels[channelIndex].live;
 
-        console.log("live:", isLive);
-        console.log("prevLive:", wasLive);
-
         if (isLive && !wasLive) {
           // Channel went live
           // send notification
