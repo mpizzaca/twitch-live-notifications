@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SwPush } from '@angular/service-worker';
 import { NotificationService } from '../notification.service';
 
 @Component({
