@@ -10,6 +10,8 @@ export class AppComponent {
   authorized: boolean | undefined;
 
   constructor(private apiService: ApiService) {
-    apiService.Authorized().subscribe((auth) => (this.authorized = auth));
+    apiService.authorized.subscribe(
+      (authorized) => (this.authorized = authorized)
+    );
   }
 }

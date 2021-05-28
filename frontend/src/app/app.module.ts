@@ -10,6 +10,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { NotificationComponent } from './notification/notification.component';
 import { LoginRegisterComponent } from './login-register/login-register.component';
+import { LoadingComponent } from './loading/loading.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { LoginRegisterComponent } from './login-register/login-register.componen
     ChannelSearchComponent,
     NotificationComponent,
     LoginRegisterComponent,
+    LoadingComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,1 +1,9 @@
-<p>login-register works!</p>
+<div>
+  <p>Login</p>
+  
+  <form (submit)="$event.preventDefault(); login(username.value, password.value)">
+    <input #username type="text" autocomplete="username">
+    <input #password type="password" autocomplete="current-password">
+    <input type="submit" value="Login" >
+  </form>
+</div>

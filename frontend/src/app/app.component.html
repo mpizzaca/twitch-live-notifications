@@ -6,8 +6,8 @@
   <app-notification></app-notification>
 </div>
 <div *ngIf="authorized === false">
-  not authorized
+  <app-login-register></app-login-register>
 </div>
 <div *ngIf="authorized === undefined">
-  loading
+  <app-loading></app-loading>>
 </div>
