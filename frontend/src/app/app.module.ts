@@ -21,7 +21,7 @@ import { NotificationComponent } from './notification/notification.component';
   imports: [
     BrowserModule,
     HttpClientModule,
-    ServiceWorkerModule.register('./ngsw-worker.js', {
+    ServiceWorkerModule.register('./custom-service-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable
       // or after 30 seconds (whichever comes first).

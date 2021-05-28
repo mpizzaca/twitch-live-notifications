@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SwPush } from '@angular/service-worker';
 import { ApiService } from './api.service';
-import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -10,11 +9,7 @@ export class NotificationService {
   private readonly PUBLIC_VAPID_KEY =
     'BP7TYEqtTtlZdYL1Jcaq0qIG7_kvwcXq4RDYoBiboSwjC3t0H4BAZO7YBSxEQjdX2PAc3D-lX1tnbTJmvX7KonE';
 
-  constructor(
-    private userService: UserService,
-    private swPush: SwPush,
-    private apiService: ApiService
-  ) {}
+  constructor(private swPush: SwPush, private apiService: ApiService) {}
 
   observeSubscription(): void {
     this.swPush.subscription.subscribe((sub) => {

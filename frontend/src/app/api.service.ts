@@ -1,7 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { UserService } from './user.service';
 import { Channel } from './channel';
 
 @Injectable({
@@ -13,27 +12,40 @@ export class ApiService {
     subscription: 'http://localhost:3005/subscription',
   };
 
-  constructor(private http: HttpClient, private userService: UserService) {}
+  private httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2MGFkODI4M2FjNGFkYjNkOTExMjg2NzciLCJpYXQiOjE2MjE5OTUxOTJ9.tzGjx5v1qYWB2TWi4-Gi3gFqdMMiRqINg3TtiX4sZo0',
+    }),
+  };
+
+  constructor(private http: HttpClient) {}
 
   getChannels(): Observable<Channel[]> {
-    return this.http.get<Channel[]>(
-      this.ENDPOINTS.channels,
-      this.userService.httpOptions
-    );
+    return this.http.get<Channel[]>(this.ENDPOINTS.channels, this.httpOptions);
   }
 
   getChannelsByName(term: string): Observable<Channel[]> {
     return this.http.get<Channel[]>(
       `${this.ENDPOINTS.channels}/?name=${term}`,
-      this.userService.httpOptions
+      this.httpOptions
     );
   }
 
   subscribeToChannel(channel: Channel): Observable<Channel[]> {
+    console.log('Subscribing to channel', channel);
     return this.http.post<Channel[]>(
       `${this.ENDPOINTS.channels}`,
       { channel },
-      this.userService.httpOptions
+      this.httpOptions
+    );
+  }
+
+  unsubscribeFromChannel(channel: Channel): Observable<Channel[]> {
+    return this.http.delete<Channel[]>(
+      `${this.ENDPOINTS.channels}/${channel.name}`,
+      this.httpOptions
     );
   }
 
@@ -42,14 +54,12 @@ export class ApiService {
       .post(
         this.ENDPOINTS.subscription,
         { webpushSubscription: sub },
-        this.userService.httpOptions
+        this.httpOptions
       )
       .subscribe();
   }
 
   deletePushSubscription(): void {
-    this.http
-      .delete(this.ENDPOINTS.subscription, this.userService.httpOptions)
-      .subscribe();
+    this.http.delete(this.ENDPOINTS.subscription, this.httpOptions).subscribe();
   }
 }
