@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { Channel } from './channel';
+import { Channel } from '../channel';
 import { ApiService } from './api.service';
 
 @Injectable({

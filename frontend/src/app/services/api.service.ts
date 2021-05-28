@@ -1,14 +1,18 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Channel } from './channel';
-import { User } from './user';
+import { Channel } from '../channel';
+import { User } from '../user';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
+  private userSubject: BehaviorSubject<User | null>;
+  public user: Observable<User | null>;
+
   private readonly ENDPOINTS = {
     root: 'http://localhost:3005',
     login: 'http://localhost:3005/login',
@@ -24,50 +28,33 @@ export class ApiService {
     }),
   };
 
-  authorized = new BehaviorSubject<boolean | undefined>(undefined);
-
-  constructor(private http: HttpClient) {
-    this.updateAuthorization();
+  constructor(private router: Router, private http: HttpClient) {
+    this.userSubject = new BehaviorSubject<User | null>(
+      JSON.parse(localStorage.getItem('user') || 'null')
+    );
+    this.user = this.userSubject.asObservable();
   }
 
-  updateAuthorization(): void {
-    if (!this.httpOptions.headers.get('Authorization')) {
-      // No token header -> not authorized
-      this.authorized.next(false);
-    } else {
-      // We have a token - check with server if it's for a valid user
-      this.http
-        .get(this.ENDPOINTS.root, this.httpOptions)
-        .pipe(
-          // if the HTTP request is successful will return true, otherwise false
-          map(() => this.authorized.next(true)),
-          catchError(() => of(this.authorized.next(false)))
-        )
-        .subscribe();
-    }
+  public get userValue(): User | null {
+    return this.userSubject.value;
   }
 
-  login(username: string, password: string): void {
-    this.http
-      .post<User>(
-        this.ENDPOINTS.login,
-        { username, password },
-        this.httpOptions
-      )
+  login(username: string, password: string): Observable<User> {
+    return this.http
+      .post<User>(this.ENDPOINTS.login, { username, password })
       .pipe(
-        map((result: User) => {
-          this.httpOptions.headers = this.httpOptions.headers.set(
-            'Authorization',
-            result.token
-          );
-          this.authorized.next(true);
-        }),
-        catchError((err) => {
-          console.log('Error loggin in:', err);
-          return of(this.authorized.next(false));
+        map((user: User) => {
+          localStorage.setItem('user', JSON.stringify(user));
+          this.userSubject.next(user);
+          return user;
         })
-      )
-      .subscribe();
+      );
+  }
+
+  logout(): void {
+    localStorage.removeItem('user');
+    this.userSubject.next(null);
+    this.router.navigate(['/account/login']);
   }
 
   getChannels(): Observable<Channel[]> {
