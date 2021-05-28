@@ -38,7 +38,7 @@ router.post("/login", (req, res) => {
       const token = jwt.sign({ userID: user._id }, process.env.JWT_PRIVATE_KEY);
       res.send({ ...returnedUser, token });
     })
-    .catch((err) => res.status(500).send(err));
+    .catch((err) => res.status(err.status).send({ message: err.message }));
 });
 
 router.post("/register", (req, res) => {
