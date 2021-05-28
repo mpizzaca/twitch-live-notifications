@@ -29,7 +29,6 @@ router.post("/login", (req, res) => {
       // Format returned user object
       const returnedUser = {
         username: user.username,
-        notificationsEnabled: user.notificationsEnabled,
         channels: user.channels,
       };
 

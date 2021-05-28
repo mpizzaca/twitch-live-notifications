@@ -10,12 +10,15 @@ router.get("/channels", (req, res) => {
     TwitchAPIManager.search(req.query.name)
       .then((result) =>
         result.map((channel) => ({
+          id: channel.id,
           name: channel.display_name,
           live: channel.is_live,
           avatarURL: channel.thumbnail_url,
         }))
       )
-      .then((result) => res.send(result))
+      .then((result) => {
+        res.send(result);
+      })
       .catch((err) => console.log(err));
   } else {
     // Return all channels the user is getting notifications for
@@ -52,7 +55,8 @@ router.post("/channels", (req, res) => {
       // Add the channel to the user's channels array
       Users.findOneAndUpdate(
         { _id: userID },
-        { $push: { channels: { ...channel } } }
+        { $push: { channels: { ...channel } } },
+        { useFindAndModify: false }
       )
     )
     .then(() => Users.findOne({ _id: userID }))
@@ -77,7 +81,8 @@ router.delete("/channels/:channelName", (req, res) => {
 
   Users.findOneAndUpdate(
     { _id: userID },
-    { $pull: { channels: { name: channelName } } }
+    { $pull: { channels: { name: channelName } } },
+    { useFindAndModify: false }
   )
     .then(() => Users.findOne({ _id: userID }))
     .then((user) => res.send(user.channels))

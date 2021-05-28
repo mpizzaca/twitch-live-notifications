@@ -1,12 +1,8 @@
-const request = require("request");
 const axios = require("axios").default;
-const util = require("util");
 const { Users } = require("./models");
+const { TWITCH_API_LEASE_SECONDS } = require("./index");
 
-const TWITCH_API_LEASE_SECONDS =
-  process.env.NODE_ENV === "production" ? 300 : 30;
-
-// will be defined in `development` mode only - how we will receive callbacks from the Twitch API
+// will be defined in `development` mode only - how we will receive callbacks from the Twitch API on localhost
 let NGROK_URL;
 
 const HELIX_ENDPOINTS = {
@@ -21,6 +17,16 @@ const HELIX_ENDPOINTS = {
 const HELIX_HEADERS = {
   "Client-ID": process.env.TWITCH_CLIENT_ID,
 };
+
+// if dev, setup ngrok
+if (process.env.NODE_ENV !== "production") {
+  require("ngrok")
+    .connect(3005)
+    .then((url) => {
+      NGROK_URL = url;
+      console.log("TWM: ngrok setup with url: " + url);
+    });
+}
 
 // Retrieve and set the twitch API token
 axios(HELIX_ENDPOINTS.Token, {
@@ -45,16 +51,12 @@ axios(HELIX_ENDPOINTS.Token, {
       "TWM: Twitch API token retreived succesfully: ",
       HELIX_HEADERS.Authorization
     );
-
-    // if dev, setup ngrok
-    if (process.env.NODE_ENV !== "production") {
-      require("ngrok")
-        .connect(3005)
-        .then((url) => {
-          NGROK_URL = url;
-          console.log("TWM: ngrok setup with url: " + url);
-        });
-    }
+  })
+  .then(() => {
+    // Refresh the 'live' status of all channels
+    updateLiveStatus();
+    // Update the avatarURL of all channels
+    updateChannelAvatars();
   })
   .catch((err) => console.log("TWM: Error retrieving API token.", err));
 
@@ -69,201 +71,88 @@ const search = (query) => {
     .then((res) => res.data.data);
 };
 
+// TODO: periodically fetch updated profile images for all channels
+// to fetch updated profile image -> 'Users' endpoint
+
 // Subscribes to Twitch webhook updates for all subscribed-to channels
-// runs on interval = TWITCH_API_LEASE_SECONDS
-const subscribeToChannelUpdates = async () => {
-  Users.distinct("channels.name").then((res) =>
-    console.log("SubscribeToChannelUpdates Users distinct: ", res)
-  );
-
-  // Get all unique channels from userdatas collection = newChannels
-  var newChannels;
-  try {
-    newChannels = await UserData.distinct("channels").exec();
-    console.log("newChannels: " + newChannels);
-  } catch (err) {
-    return console.log(
-      "TWM: error getting UserData channels: " + JSON.stringify(err)
-    );
-  }
-
-  // Get all channels from channels collection = oldChannels
-  var oldChannels;
-  try {
-    oldChannels = await Channels.distinct("name").exec();
-    console.log("oldChannels: " + oldChannels);
-  } catch (err) {
-    return console.log(
-      "TWM: error getting oldChannels: " + JSON.stringify(err)
-    );
-  }
-
-  // Compare newChannels and oldChannels to get:
-  // a) removedChannels = in oldChannels, not in newChannels
-  // b) addedChannels = not in oldchannels, in newChannels
-  var removedChannels = [];
-  oldChannels.forEach((channel) => {
-    if (!newChannels.includes(channel)) removedChannels.push(channel);
-  });
-  console.log("removedChannels: " + removedChannels);
-
-  var addedChannels = [];
-  newChannels.forEach((channel) => {
-    if (!oldChannels.includes(channel)) addedChannels.push(channel);
-  });
-  console.log("addedChannels: " + addedChannels);
-
-  // Delete all documents from channels collection where channel in removedChannels
-  if (removedChannels.length > 0) {
-    Channels.deleteMany({ name: { $in: removedChannels } }, (err, res) => {
-      if (err)
-        console.log(
-          "TWM: error deleting removedChannels: " + JSON.stringify(err)
-        );
-      console.log("removedChannels mongo result n: " + JSON.stringify(res.n));
-    });
-  }
-
-  // Insert new documents into channels collection where channel in addedChannels
-  if (addedChannels.length > 0) {
-    var promises = [Promise];
-
-    var addedChannelObjs = [];
-    addedChannels.forEach((channel) => {
-      addedChannelObjs.push({ name: channel, live: false });
-    });
-    Channels.insertMany(addedChannelObjs, (err, docs) => {
-      if (err)
-        console.log(
-          "TWM: error inserting addedChannels: " + JSON.stringify(err)
-        );
-      // debug: console.log('addedChannels mongo result: ' + JSON.stringify(docs))
-    });
-
-    // Pull 'stream' data for addedChannels to enrich Channels collection. Will save:
-    // current live status
-    {
-      let qs = new URLSearchParams();
-      addedChannels.forEach((element) => {
-        qs.append("user_login", element);
-      });
-      let options = {
-        url: this.HELIX_ENDPOINTS.Streams + "?" + qs,
-        json: true,
-        headers: this.HELIX_HEADERS,
-      };
-      let req_p = util.promisify(request);
-      let res;
-      try {
-        res = await req_p(options);
-      } catch (err) {
-        console.log("TWM: error pulling addedChannels status: " + err);
-      }
-      // channels in 'data' array with type=live are live, all others are not
-      let liveChannels = [];
-      res.body.data.forEach((element) => {
-        if (element.type === "live") {
-          liveChannels.push(element.user_name.toLowerCase());
-        }
-      });
-      addedChannels.forEach((channel) => {
-        if (liveChannels.includes(channel)) {
-          promises.push(
-            Channels.findOneAndUpdate(
-              { name: channel },
-              { live: true },
-              { useFindAndModify: false }
-            ).exec()
-          );
-        }
-      });
-    }
-    // Pull 'user' data for addedChannels to enrich Channels collection. Will save:
-    // user_id, profile_image_url
-    {
-      let qs = new URLSearchParams();
-      addedChannels.forEach((element) => {
-        qs.append("login", element);
-      });
-      let options = {
-        url: this.HELIX_ENDPOINTS.Users + "?" + qs,
-        json: true,
-        headers: this.HELIX_HEADERS,
-      };
-      let req_p = util.promisify(request);
-      let res;
-      try {
-        res = await req_p(options);
-      } catch (err) {
-        console.log("TWM: error pulling addedChannels 'user' data: " + err);
-      }
-      // debug: console.log('user data: ' + JSON.stringify(res.body))
-      res.body.data.forEach((element) => {
-        let user_name = element.login;
-        let user_id = element.id;
-        let profile_image_url = element.profile_image_url;
-
-        promises.push(
-          Channels.findOneAndUpdate(
-            { name: user_name },
-            { user_id, profile_image_url },
-            { useFindAndModify: false }
-          ).exec()
-        );
-      });
-    }
-  }
-
-  // if we added new channels, wait for the enrichment promises to resolve before Subscribing to Webhooks
-  if (promises) {
-    Promise.all(promises).then((vals) => {
-      subToWebhooks();
-    });
-  } else {
-    subToWebhooks();
-  }
-};
-
-// Subscribe to Webhook for status updates on all channels
-const subToWebhooks = () => {
-  let callbackUrl = NGROK_URL || process.env.CALLBACK_URL;
-  console.log("callbackUrl: " + callbackUrl);
-  if (!callbackUrl)
-    return console.error(
-      "TWM: cancelling webhook subscriptions - no valid callback URL"
-    );
-  Channels.find((err, docs) => {
-    docs.forEach(async (doc) => {
-      console.log("doc: " + JSON.stringify(doc));
-      let body = {
-        "hub.callback": callbackUrl + "/streams/" + doc.name,
+const subscribeToStreamUpdates = () => {
+  Users.distinct("channels").then((channels) => {
+    for (channel of channels) {
+      const callbackURL = process.env.CALLBACK_URL || NGROK_URL;
+      const body = {
+        "hub.callback": `${callbackURL}/streams/${channel.name}`,
         "hub.mode": "subscribe",
-        "hub.topic": HELIX_ENDPOINTS.Streams + "?user_id=" + doc.user_id,
+        "hub.topic": `${HELIX_ENDPOINTS.Streams}?user_id=${channel.id}`,
         "hub.lease_seconds": TWITCH_API_LEASE_SECONDS,
+        "hub.secret": process.env.TWITCH_WEBHOOK_SECRET,
       };
 
-      let options = {
-        url: HELIX_ENDPOINTS.Subscribe,
-        json: true,
-        method: "POST",
-        body: body,
-        headers: HELIX_HEADERS,
-      };
-
-      let req_p = util.promisify(request);
-      let res;
-      try {
-        res = await req_p(options);
-      } catch (err) {
-        return console.log("TWM: error subscribing to webhook: " + err);
-      }
-      if (res.statusCode === 202) {
-        console.log("TWM: successfully subscribed to webhook for " + doc.name);
-      } else {
-        console.log("TWM: webhook subscription returned non-success: ", res);
-      }
-    });
+      axios
+        .post(HELIX_ENDPOINTS.Subscribe, body, {
+          headers: HELIX_HEADERS,
+          json: true,
+        })
+        .catch((err) => console.log("Error subscribing to webhook: ", err));
+    }
   });
 };
 
-module.exports = { search, subscribeToChannelUpdates };
+const updateChannelAvatars = () => {
+  Users.distinct("channels").then((channels) => {
+    for (channel of channels) {
+      // Use a closure to maintain reference to 'channel' in .then()
+      (function (channel) {
+        axios
+          .get(`${HELIX_ENDPOINTS.Users}?login=${channel.name}`, {
+            headers: HELIX_HEADERS,
+          })
+          .then((userData) => {
+            const avatarURL = userData.data.data[0]?.profile_image_url;
+            if (!avatarURL) {
+              return console.log(
+                "Error updating channel avatar: ",
+                channel.name
+              );
+            }
+            console.log(`Setting ${channel.name}'s avatarURL to ${avatarURL}`);
+
+            return Users.updateMany(
+              { channels: { $elemMatch: { name: channel.name } } },
+              { $set: { "channels.$[channel].avatarURL": avatarURL } },
+              { arrayFilters: [{ "channel.name": { $eq: channel.name } }] }
+            );
+          });
+      })(channel);
+    }
+  });
+};
+
+const updateLiveStatus = () => {
+  Users.distinct("channels").then((channels) => {
+    for (channel of channels) {
+      // Use a closure to maintain reference to 'channel' in .then()
+      (function (channel) {
+        axios
+          .get(`${HELIX_ENDPOINTS.Streams}?user_id=${channel.id}`, {
+            headers: HELIX_HEADERS,
+          })
+          .then((streamData) => {
+            // Save current live status
+            const live = streamData.data.data[0]?.type === "live";
+            console.log(`Setting ${channel.name}'s LIVE status to ${live}`);
+
+            return Users.updateMany(
+              { channels: { $elemMatch: { name: channel.name } } },
+              { $set: { "channels.$[channel].live": live } },
+              { arrayFilters: [{ "channel.name": { $eq: channel.name } }] }
+            );
+          })
+          .catch((err) =>
+            console.log("Error saving current LIVE status:", err)
+          );
+      })(channel);
+    }
+  });
+};
+
+module.exports = { search, subscribeToStreamUpdates, updateChannelAvatars };

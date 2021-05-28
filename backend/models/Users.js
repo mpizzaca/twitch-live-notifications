@@ -2,9 +2,10 @@ const mongoose = require("mongoose");
 
 const Channel = new mongoose.Schema(
   {
+    id: { type: Number, required: true },
     name: { type: String, required: true },
     live: { type: Boolean, required: true },
-    avatarURL: { type: String, required: false },
+    avatarURL: { type: String, required: true },
   },
   { _id: false }
 );
@@ -36,7 +37,6 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   channels: { type: [Channel], required: false },
-  notificationsEnabled: { type: Boolean, default: null },
   webpushSubscription: { type: WebpushSubscription, default: null },
 });
 
