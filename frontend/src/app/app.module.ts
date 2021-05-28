@@ -11,6 +11,7 @@ import { environment } from '../environments/environment';
 import { NotificationComponent } from './notification/notification.component';
 import { LoginRegisterComponent } from './login-register/login-register.component';
 import { LoadingComponent } from './loading/loading.component';
+import { AppRoutingModule } from './app-routing.module';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { LoadingComponent } from './loading/loading.component';
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
+    AppRoutingModule,
   ],
   providers: [ChannelsComponent],
   bootstrap: [AppComponent],
