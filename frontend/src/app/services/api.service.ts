@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Channel } from '../channel';
 import { User } from '../user';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -14,10 +15,11 @@ export class ApiService {
   public user: Observable<User | null>;
 
   private readonly ENDPOINTS = {
-    root: 'http://localhost:3005',
-    login: 'http://localhost:3005/login',
-    channels: 'http://localhost:3005/channels',
-    subscription: 'http://localhost:3005/subscription',
+    root: `${environment.apiUrl}`,
+    login: `${environment.apiUrl}/login`,
+    register: `${environment.apiUrl}/register`,
+    channels: `${environment.apiUrl}/channels`,
+    subscription: `${environment.apiUrl}/subscription`,
   };
 
   private httpOptions = {
@@ -49,6 +51,13 @@ export class ApiService {
           return user;
         })
       );
+  }
+
+  register(username: string, password: string): Observable<User> {
+    return this.http.post<User>(this.ENDPOINTS.register, {
+      username,
+      password,
+    });
   }
 
   logout(): void {

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ApiService } from './services/api.service';
+import { User } from './user';
 
 @Component({
   selector: 'app-root',
@@ -7,11 +8,9 @@ import { ApiService } from './services/api.service';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  authorized: boolean | undefined;
+  user!: User | null;
 
   constructor(private apiService: ApiService) {
-    apiService.authorized.subscribe(
-      (authorized) => (this.authorized = authorized)
-    );
+    this.apiService.user.subscribe((x) => (this.user = x));
   }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Channel } from '../channel';
-import { ChannelService } from '../channel.service';
+import { ChannelService } from '../services/channel.service';
 @Component({
   selector: 'app-channel-list-item',
   templateUrl: './channel-list-item.component.html',

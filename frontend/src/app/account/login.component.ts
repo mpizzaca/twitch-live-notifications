@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
+import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
 
 @Component({ templateUrl: 'login.component.html' })
@@ -46,7 +47,7 @@ export class LoginComponent implements OnInit {
     }
 
     this.loading = true;
-    this.accountService
+    this.apiService
       .login(this.f.username.value, this.f.password.value)
       .pipe(first())
       .subscribe(
