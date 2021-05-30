@@ -10,7 +10,6 @@ import { ChannelSearchComponent } from './channel-search/channel-search.componen
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { NotificationComponent } from './notification/notification.component';
-import { LoginRegisterComponent } from './login-register/login-register.component';
 import { LoadingComponent } from './loading/loading.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AlertComponent } from './alert/alert.component';
@@ -24,7 +23,6 @@ import { HomeComponent } from './home/home.component';
     ChannelsComponent,
     ChannelSearchComponent,
     NotificationComponent,
-    LoginRegisterComponent,
     LoadingComponent,
     AlertComponent,
     HomeComponent,
@@ -42,7 +40,6 @@ import { HomeComponent } from './home/home.component';
     AppRoutingModule,
   ],
   providers: [
-    ChannelsComponent,
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
   ],
