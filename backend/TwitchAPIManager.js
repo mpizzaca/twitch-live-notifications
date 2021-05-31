@@ -1,6 +1,5 @@
 const axios = require("axios").default;
 const { Users } = require("./models");
-const { TWITCH_API_LEASE_SECONDS } = require("./index");
 
 // will be defined in `development` mode only - how we will receive callbacks from the Twitch API on localhost
 let NGROK_URL;
@@ -17,6 +16,11 @@ const HELIX_ENDPOINTS = {
 const HELIX_HEADERS = {
   "Client-ID": process.env.TWITCH_CLIENT_ID,
 };
+
+// setup constant variables
+const TWITCH_API_LEASE_SECONDS =
+  process.env.NODE_ENV === "production" ? 300 : 30;
+const AVATAR_URL_UPDATE_FREQUENCY_MS = 3 * 24 * 60 * 60 * 1000; // every 3 days
 
 // if dev, setup ngrok
 if (process.env.NODE_ENV !== "production") {
@@ -155,4 +159,10 @@ const updateLiveStatus = () => {
   });
 };
 
-module.exports = { search, subscribeToStreamUpdates, updateChannelAvatars };
+module.exports = {
+  search,
+  subscribeToStreamUpdates,
+  updateChannelAvatars,
+  TWITCH_API_LEASE_SECONDS,
+  AVATAR_URL_UPDATE_FREQUENCY_MS,
+};

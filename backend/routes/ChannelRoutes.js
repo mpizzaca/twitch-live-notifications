@@ -55,8 +55,7 @@ router.post("/channels", (req, res) => {
       // Add the channel to the user's channels array
       Users.findOneAndUpdate(
         { _id: userID },
-        { $push: { channels: { ...channel } } },
-        { useFindAndModify: false }
+        { $push: { channels: { ...channel } } }
       )
     )
     .then(() => Users.findOne({ _id: userID }))
@@ -81,8 +80,7 @@ router.delete("/channels/:channelName", (req, res) => {
 
   Users.findOneAndUpdate(
     { _id: userID },
-    { $pull: { channels: { name: channelName } } },
-    { useFindAndModify: false }
+    { $pull: { channels: { name: channelName } } }
   )
     .then(() => Users.findOne({ _id: userID }))
     .then((user) => res.send(user.channels))

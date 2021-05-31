@@ -19,16 +19,14 @@ const ChannelRoutes = require("./routes/ChannelRoutes");
 const SubscriptionRoutes = require("./routes/SubscriptionRoutes");
 const StreamRoutes = require("./routes/StreamRoutes");
 
-// setup constant variables
-const TWITCH_API_LEASE_SECONDS =
-  process.env.NODE_ENV === "production" ? 300 : 30;
-const AVATAR_URL_UPDATE_FREQUENCY_MS = 3 * 24 * 60 * 60 * 1000; // every 3 days
-
 // configure mongoose
 mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+mongoose.set("useNewUrlParser", true);
+mongoose.set("useFindAndModify", false);
+mongoose.set("useCreateIndex", true);
 
 // create the server
 const app = express();
@@ -58,12 +56,12 @@ setTimeout(() => {
   TwitchAPIManager.subscribeToStreamUpdates();
   setInterval(() => {
     TwitchAPIManager.subscribeToStreamUpdates();
-  }, TWITCH_API_LEASE_SECONDS * 1000);
+  }, TwitchAPIManager.TWITCH_API_LEASE_SECONDS * 1000);
 }, 10000);
 
 // setup recurring avatarURL update for channels
 setInterval(() => {
   TwitchAPIManager.updateChannelAvatars();
-}, AVATAR_URL_UPDATE_FREQUENCY_MS);
+}, TwitchAPIManager.AVATAR_URL_UPDATE_FREQUENCY_MS);
 
-module.exports = { app, TWITCH_API_LEASE_SECONDS };
+module.exports = { app };
