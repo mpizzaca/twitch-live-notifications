@@ -1,2 +1,14 @@
-<button (click)="subscribeToPushNotifications()">Subscribe</button>
-<button (click)="unsubscribeFromPushNotifications()">Unsubscribe</button>
+<div class="container is-flex is-align-items-center">
+  <h2 class="title is-4">Notifications Enabled</h2>
+  <div class="field">
+    <input
+      type="checkbox"
+      id="switchExample"
+      name="switchExample"
+      class="switch is-medium is-rounded"
+      [(ngModel)]="isChecked"
+      (change)="notificationsToggle()"
+    />
+    <label for="switchExample"></label>
+  </div>
+</div>
