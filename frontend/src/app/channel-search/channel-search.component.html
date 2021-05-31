@@ -5,8 +5,12 @@
         class="input is-large"
         id="search-box"
         #searchBox
+        type="search"
         (input)="search(searchBox.value)"
-        placeholder="search twitch channels..."
+        placeholder="search channels..."
+        [ngClass]="{
+          'has-search-query': this.enableClear && searchBox.value.length > 0
+        }"
       />
     </div>
   </div>

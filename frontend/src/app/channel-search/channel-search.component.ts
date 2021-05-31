@@ -19,6 +19,7 @@ export class ChannelSearchComponent implements OnInit {
   channels: Channel[] = [];
   private searchTerms = new Subject<string>();
   loading = false;
+  enableClear = false;
 
   constructor(private channelService: ChannelService) {}
 
@@ -29,12 +30,14 @@ export class ChannelSearchComponent implements OnInit {
   ngOnInit(): void {
     this.searchTerms
       .pipe(
+        tap(() => (this.enableClear = false)),
         debounceTime(300),
         distinctUntilChanged(),
         tap(() => (this.loading = true)),
         switchMap((term: string) => this.channelService.searchChannels(term)),
         map((channels) => {
           this.loading = false;
+          this.enableClear = true;
           // filter already subscribed-to channels from search results
           return channels.filter((channel) =>
             this.filterSubscribedChannels(channel)

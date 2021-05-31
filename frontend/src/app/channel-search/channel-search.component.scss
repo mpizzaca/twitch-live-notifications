@@ -13,4 +13,13 @@ ul {
 
 .control {
   width: 100%;
+  max-width: 500px;
+}
+
+#search-box:not(.has-search-query)::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.has-search-query::-webkit-search-cancel-button {
+  position: relative;
 }
