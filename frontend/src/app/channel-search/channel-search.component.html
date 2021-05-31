@@ -1,6 +1,15 @@
-<div>
-  <label for="channel-search">Channel Search</label>
-  <input id="search-box" #searchBox (input)="search(searchBox.value)">
+<div class="container">
+  <div class="is-flex is-flex-direction-row is-align-items-center">
+    <div class="control is-large" [ngClass]="{ 'is-loading': loading }">
+      <input
+        class="input is-large"
+        id="search-box"
+        #searchBox
+        (input)="search(searchBox.value)"
+        placeholder="search twitch channels..."
+      />
+    </div>
+  </div>
   <ul>
     <li *ngFor="let channel of channels">
       <app-channel-list-item [channel]="channel"></app-channel-list-item>

@@ -5,6 +5,7 @@ import {
   distinctUntilChanged,
   switchMap,
   map,
+  tap,
 } from 'rxjs/operators';
 import { Channel } from '../channel';
 import { ChannelService } from '../services/channel.service';
@@ -17,6 +18,7 @@ import { ChannelService } from '../services/channel.service';
 export class ChannelSearchComponent implements OnInit {
   channels: Channel[] = [];
   private searchTerms = new Subject<string>();
+  loading = false;
 
   constructor(private channelService: ChannelService) {}
 
@@ -29,8 +31,10 @@ export class ChannelSearchComponent implements OnInit {
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
+        tap(() => (this.loading = true)),
         switchMap((term: string) => this.channelService.searchChannels(term)),
         map((channels) => {
+          this.loading = false;
           // filter already subscribed-to channels from search results
           return channels.filter((channel) =>
             this.filterSubscribedChannels(channel)
