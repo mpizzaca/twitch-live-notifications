@@ -65,13 +65,11 @@ export class ApiService {
   }
 
   getChannels(): Observable<Channel[]> {
-    console.log('getChannels');
-    console.log(this.httpOptions);
     return this.http
       .get<Channel[]>(this.ENDPOINTS.channels, this.httpOptions)
       .pipe(
         catchError((err) => {
-          console.log('getChannels error:', err);
+          console.log('Error getting channels:', err);
           return of([]);
         })
       );
