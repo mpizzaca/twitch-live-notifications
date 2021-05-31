@@ -1,31 +1,54 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  AbstractControl,
+} from '@angular/forms';
 import { first } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
-import { AlertService } from '../services/alert.service';
+import { faUser, faCheck, faKey } from '@fortawesome/free-solid-svg-icons';
 
 @Component({ templateUrl: 'register.component.html' })
 export class RegisterComponent implements OnInit {
   form!: FormGroup;
   loading = false;
   submitted = false;
+  error = '';
+
+  // fontawesome icons
+  faUser = faUser;
+  faCheck = faCheck;
+  faKey = faKey;
 
   constructor(
-    private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ApiService,
-    private alertService: AlertService
+    private apiService: ApiService
   ) {}
 
   ngOnInit() {
-    this.form = this.formBuilder.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      username: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-    });
+    this.form = new FormGroup(
+      {
+        username: new FormControl('', [Validators.required]),
+        password: new FormControl('', [
+          Validators.required,
+          Validators.minLength(6),
+        ]),
+        passwordConfirm: new FormControl('', [
+          Validators.required,
+          Validators.minLength(6),
+        ]),
+      },
+      this.passwordMatchValidator
+    );
+  }
+
+  passwordMatchValidator(g: AbstractControl) {
+    return g.get('password')!.value === g.get('passwordConfirm')!.value
+      ? null
+      : { passwordMismatch: true };
   }
 
   // convenience getter for easy access to form fields
@@ -33,37 +56,36 @@ export class RegisterComponent implements OnInit {
     return this.form.controls;
   }
 
+  // convenience getter for easy access to form group
+  get g() {
+    return this.form;
+  }
+
   onSubmit() {
     this.submitted = true;
-
-    // reset alerts on submit
-    this.alertService.clear();
 
     // stop here if form is invalid
     if (this.form.invalid) {
       return;
     }
-
     this.loading = true;
 
     // need to pass username/password to register()
     // where are they in this.form?
-    console.log(this.form.value);
+    const { username, password } = this.form.value;
 
-    //   this.apiService
-    //     .register(this.form.value)
-    //     .pipe(first())
-    //     .subscribe(
-    //       (data) => {
-    //         this.alertService.success('Registration successful', {
-    //           keepAfterRouteChange: true,
-    //         });
-    //         this.router.navigate(['../login'], { relativeTo: this.route });
-    //       },
-    //       (error) => {
-    //         this.alertService.error(error);
-    //         this.loading = false;
-    //       }
-    //     );
+    this.apiService
+      .register(username, password)
+      .pipe(first())
+      .subscribe(
+        (data) => {
+          this.router.navigate(['../login'], { relativeTo: this.route });
+        },
+        (error) => {
+          // TODO display error
+          this.error = error;
+          this.loading = false;
+        }
+      );
   }
 }

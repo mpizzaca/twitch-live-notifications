@@ -12,7 +12,6 @@ import { environment } from '../environments/environment';
 import { NotificationComponent } from './notification/notification.component';
 import { LoadingComponent } from './loading/loading.component';
 import { AppRoutingModule } from './app-routing.module';
-import { AlertComponent } from './alert/alert.component';
 import { JwtInterceptor, ErrorInterceptor } from './helpers';
 import { HomeComponent } from './home/home.component';
 
@@ -24,7 +23,6 @@ import { HomeComponent } from './home/home.component';
     ChannelSearchComponent,
     NotificationComponent,
     LoadingComponent,
-    AlertComponent,
     HomeComponent,
   ],
   imports: [

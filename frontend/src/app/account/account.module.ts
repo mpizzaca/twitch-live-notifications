@@ -6,9 +6,21 @@ import { AccountRoutingModule } from './account-routing.module';
 import { LayoutComponent } from './layout.component';
 import { LoginComponent } from './login.component';
 import { RegisterComponent } from './register.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AlertComponent } from '../alert/alert.component';
 
 @NgModule({
-  imports: [CommonModule, ReactiveFormsModule, AccountRoutingModule],
-  declarations: [LayoutComponent, LoginComponent, RegisterComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FontAwesomeModule,
+    AccountRoutingModule,
+  ],
+  declarations: [
+    LayoutComponent,
+    LoginComponent,
+    RegisterComponent,
+    AlertComponent,
+  ],
 })
 export class AccountModule {}

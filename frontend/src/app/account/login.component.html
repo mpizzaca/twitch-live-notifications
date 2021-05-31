@@ -1,40 +1,63 @@
-<div class="card">
-  <h4 class="card-header">Login</h4>
-  <div class="card-body">
+<div class="contents">
+  <h4 class="title">Login</h4>
+  <div>
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          formControlName="username"
-          class="form-control"
-          [ngClass]="{ 'is-invalid': submitted && f.username.errors }"
-        />
-        <div *ngIf="submitted && f.username.errors" class="invalid-feedback">
-          <div *ngIf="f.username.errors.required">Username is required</div>
+      <div class="field">
+        <label class="label" for="username">Username</label>
+        <div class="control has-icons-left">
+          <input
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            class="input"
+            [ngClass]="{ 'is-danger': submitted && f.username.errors }"
+          />
+          <span class="icon is-small is-left">
+            <fa-icon [icon]="faUser"></fa-icon>
+          </span>
+        </div>
+        <div *ngIf="submitted && f.username.errors">
+          <p *ngIf="f.username.errors.required" class="help is-danger">
+            Username is required
+          </p>
         </div>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          formControlName="password"
-          class="form-control"
-          [ngClass]="{ 'is-invalid': submitted && f.password.errors }"
-        />
-        <div *ngIf="submitted && f.password.errors" class="invalid-feedback">
-          <div *ngIf="f.password.errors.required">Password is required</div>
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <div class="control has-icons-left">
+          <input
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            class="input"
+            [ngClass]="{ 'is-danger': submitted && f.password.errors }"
+          />
+          <span class="icon is-small is-left">
+            <fa-icon [icon]="faKey"></fa-icon>
+          </span>
+        </div>
+        <div *ngIf="submitted && f.password.errors">
+          <p *ngIf="f.password.errors.required" class="help is-danger">
+            Password is required
+          </p>
         </div>
       </div>
-      <div class="form-group">
-        <button [disabled]="loading" class="btn btn-primary">
-          <span
-            *ngIf="loading"
-            class="spinner-border spinner-border-sm mr-1"
-          ></span>
-          Login
-        </button>
-        <a routerLink="../register" class="btn btn-link">Register</a>
+      <app-alert *ngIf="error" [error]="error"></app-alert>
+      <div class="field is-grouped">
+        <div class="control">
+          <button [disabled]="loading" class="button is-link">
+            <span
+              *ngIf="loading"
+              class="spinner-border spinner-border-sm mr-1"
+            ></span>
+            Login
+          </button>
+        </div>
+        <div class="control">
+          <a routerLink="../register" class="button is-link is-light"
+            >Register</a
+          >
+        </div>
       </div>
     </form>
   </div>

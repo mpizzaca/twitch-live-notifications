@@ -1,67 +1,106 @@
-<div class="card">
-  <h4 class="card-header">Register</h4>
-  <div class="card-body">
+<div class="contents">
+  <h4 class="title">Register</h4>
+  <div>
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="firstName">First Name</label>
-        <input
-          type="text"
-          formControlName="firstName"
-          class="form-control"
-          [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }"
-        />
-        <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
-          <div *ngIf="f.firstName.errors.required">First Name is required</div>
+      <div class="field">
+        <label class="label" for="username">Username</label>
+        <div class="control has-icons-left has-icons-right">
+          <!-- TODO add 'is-success' class if username is available -->
+          <input
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            class="input"
+            [ngClass]="{ 'is-danger': submitted && f.username.errors }"
+          />
+          <span class="icon is-small is-left">
+            <fa-icon [icon]="faUser"></fa-icon>
+          </span>
+          <!-- TODO enable checkmark when username is available
+          <span class="icon is-small is-right">
+            <fa-icon [icon]="faCheck"></fa-icon>
+          </span> 
+        --></div>
+
+        <div *ngIf="submitted && f.username.errors">
+          <p *ngIf="f.username.errors.required" class="help is-danger">
+            Username is required
+          </p>
         </div>
       </div>
-      <div class="form-group">
-        <label for="lastName">Last Name</label>
-        <input
-          type="text"
-          formControlName="lastName"
-          class="form-control"
-          [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }"
-        />
-        <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
-          <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <div class="control has-icons-left">
+          <input
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            class="input"
+            [ngClass]="{ 'is-danger': submitted && f.password.errors }"
+          />
+          <span class="icon is-small is-left">
+            <fa-icon [icon]="faKey"></fa-icon>
+          </span>
+        </div>
+        <div *ngIf="submitted && f.password.errors">
+          <p *ngIf="f.password.errors.required" class="help is-danger">
+            Password is required
+          </p>
+          <p *ngIf="f.password.errors.minlength" class="help is-danger">
+            Password must be at least
+            {{ f.password.errors.minlength.requiredLength }} characters
+          </p>
         </div>
       </div>
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          formControlName="username"
-          class="form-control"
-          [ngClass]="{ 'is-invalid': submitted && f.username.errors }"
-        />
-        <div *ngIf="submitted && f.username.errors" class="invalid-feedback">
-          <div *ngIf="f.username.errors.required">Username is required</div>
+      <div class="field">
+        <label class="label" for="passwordConfirm">Confirm Password</label>
+        <div class="control has-icons-left">
+          <input
+            type="password"
+            formControlName="passwordConfirm"
+            autocomplete="new-password"
+            class="input"
+            [ngClass]="{ 'is-danger': submitted && f.password.errors }"
+          />
+          <span class="icon is-small is-left">
+            <fa-icon [icon]="faKey"></fa-icon>
+          </span>
+        </div>
+        <div
+          *ngIf="
+            submitted &&
+            (g.errors?.passwordMismatch || f.passwordConfirm.errors?.required)
+          "
+        >
+          <p *ngIf="f.passwordConfirm.errors?.required" class="help is-danger">
+            Password confirmation is required
+          </p>
+          <p
+            *ngIf="
+              g.errors?.passwordMismatch && f.passwordConfirm.value.length > 0
+            "
+            class="help is-danger"
+          >
+            Passwords must match
+          </p>
         </div>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          formControlName="password"
-          class="form-control"
-          [ngClass]="{ 'is-invalid': submitted && f.password.errors }"
-        />
-        <div *ngIf="submitted && f.password.errors" class="invalid-feedback">
-          <div *ngIf="f.password.errors.required">Password is required</div>
-          <div *ngIf="f.password.errors.minlength">
-            Password must be at least 6 characters
-          </div>
+
+      <app-alert *ngIf="error" [error]="error"></app-alert>
+
+      <div class="field is-grouped">
+        <div class="control">
+          <button [disabled]="loading" class="button is-link">
+            <span
+              *ngIf="loading"
+              class="spinner-border spinner-border-sm mr-1"
+            ></span>
+            Register
+          </button>
         </div>
-      </div>
-      <div class="form-group">
-        <button [disabled]="loading" class="btn btn-primary">
-          <span
-            *ngIf="loading"
-            class="spinner-border spinner-border-sm mr-1"
-          ></span>
-          Register
-        </button>
-        <a routerLink="../login" class="btn btn-link">Cancel</a>
+        <div class="control">
+          <a routerLink="../login" class="button is-link is-light">Cancel</a>
+        </div>
       </div>
     </form>
   </div>

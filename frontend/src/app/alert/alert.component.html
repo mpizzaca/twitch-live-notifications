@@ -1,4 +1,10 @@
-<div *ngFor="let alert of alerts" class="{{cssClass(alert)}}">
-  <a class="close" (click)="removeAlert(alert)">&times;</a>
-  <span [innerHTML]="alert.message"></span>
+<div class="alert-container">
+  <div class="alert-icon">
+    <span class="icon">
+      <fa-icon [icon]="faExclamationTriangle"></fa-icon>
+    </span>
+  </div>
+  <div class="alert-text">
+    <p>{{ error }}</p>
+  </div>
 </div>

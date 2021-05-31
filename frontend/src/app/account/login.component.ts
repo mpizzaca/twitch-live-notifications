@@ -1,29 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
-import { AlertService } from '../services/alert.service'
-import { ApiService } from '../services/api.service'
+import { ApiService } from '../services/api.service';
+import { faUser, faCheck, faKey } from '@fortawesome/free-solid-svg-icons';
 
 @Component({ templateUrl: 'login.component.html' })
 export class LoginComponent implements OnInit {
   form!: FormGroup;
   loading = false;
+  error = '';
   submitted = false;
   returnUrl!: string;
 
+  // fontawesome icons
+  faUser = faUser;
+  faCheck = faCheck;
+  faKey = faKey;
+
   constructor(
-    private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ApiService,
-    private alertService: AlertService
+    private apiService: ApiService
   ) {}
 
   ngOnInit() {
-    this.form = this.formBuilder.group({
-      username: ['', Validators.required],
-      password: ['', Validators.required],
+    this.form = new FormGroup({
+      username: new FormControl('', [Validators.required]),
+      password: new FormControl('', [Validators.required]),
     });
 
     // get return url from route parameters or default to '/'
@@ -36,10 +40,8 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
+    console.log(this.form);
     this.submitted = true;
-
-    // reset alerts on submit
-    this.alertService.clear();
 
     // stop here if form is invalid
     if (this.form.invalid) {
@@ -55,7 +57,7 @@ export class LoginComponent implements OnInit {
           this.router.navigate([this.returnUrl]);
         },
         (error) => {
-          this.alertService.error(error);
+          this.error = error;
           this.loading = false;
         }
       );

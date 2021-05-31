@@ -1,0 +1,20 @@
+$alert-padding: 0.5rem;
+
+.alert-container {
+  display: flex;
+  margin: 1rem 0;
+}
+
+.alert-icon {
+  color: white;
+  padding: $alert-padding;
+  background: rgb(255, 52, 52);
+}
+
+.alert-text {
+  color: black;
+  padding: $alert-padding;
+  border-style: solid;
+  border-color: rgb(255, 52, 52);
+  border-width: 2px 2px 2px 0;
+}
