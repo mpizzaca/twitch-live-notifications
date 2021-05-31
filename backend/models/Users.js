@@ -31,6 +31,10 @@ const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
+    index: {
+      unique: true,
+      collation: { locale: "en", strength: 2 },
+    },
   },
   password: {
     type: String,

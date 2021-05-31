@@ -27,16 +27,11 @@ router.post("/login", (req, res) => {
     })
     .then(([user, match]) => {
       if (!match) {
-        return Promise.reject({ status: 401, message: "incorrect password" });
+        return Promise.reject({ status: 401, message: "wrong password" });
       }
-      // Format returned user object
-      const returnedUser = {
-        username: user.username,
-        channels: user.channels,
-      };
 
       const token = jwt.sign({ userID: user._id }, process.env.JWT_PRIVATE_KEY);
-      res.send({ ...returnedUser, token });
+      res.send({ username: user.username, token });
     })
     .catch((err) => res.status(err.status).send({ message: err.message }));
 });
@@ -45,23 +40,18 @@ router.post("/register", (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).send({ message: "All fields are required" });
-  }
-  if (password?.length < 7) {
     return res
       .status(400)
-      .send({ message: "Password must be at least 7 characters" });
+      .send({ message: "username and password are required" });
   }
-
-  Users.findOne({ username: username })
-    .exec()
-    .then((user) => {
-      if (user) {
-        return Promise.reject({ status: 400, message: "User already exists" });
-      }
-      // Generate hash
-      return bcrypt.hash(password, 10);
-    })
+  if (password?.length < 6) {
+    return res
+      .status(400)
+      .send({ message: "password must be at least 6 characters" });
+  }
+  // Generate hash
+  bcrypt
+    .hash(password, 10)
     .then((hashedPassword) => {
       // Save the new user
       const newUser = new Users({
@@ -76,8 +66,10 @@ router.post("/register", (req, res) => {
       res.status(201).send({ username: user.username, token });
     })
     .catch((err) => {
-      console.error(err);
-      if (err.status && err.message) {
+      console.error(err.code);
+      if (err.code === 11000) {
+        res.status(400).send({ message: "user already exists" });
+      } else if (err.status && err.message) {
         res.status(err.status).send({ message: err.message });
       } else {
         res.status(500).send(err);
