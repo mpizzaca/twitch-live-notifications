@@ -14,6 +14,8 @@ import { LoadingComponent } from './loading/loading.component';
 import { AppRoutingModule } from './app-routing.module';
 import { JwtInterceptor, ErrorInterceptor } from './helpers';
 import { HomeComponent } from './home/home.component';
+import { NavComponent } from './nav/nav.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -24,8 +26,10 @@ import { HomeComponent } from './home/home.component';
     NotificationComponent,
     LoadingComponent,
     HomeComponent,
+    NavComponent,
   ],
   imports: [
+    FontAwesomeModule,
     BrowserModule,
     HttpClientModule,
     ReactiveFormsModule,
