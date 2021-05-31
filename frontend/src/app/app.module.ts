@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { ChannelListItemComponent } from './channel-list-item/channel-list-item.component';
@@ -29,14 +29,13 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     NavComponent,
   ],
   imports: [
+    FormsModule,
     FontAwesomeModule,
     BrowserModule,
     HttpClientModule,
     ReactiveFormsModule,
     ServiceWorkerModule.register('./custom-service-worker.js', {
       enabled: environment.production,
-      // Register the ServiceWorker as soon as the app is stable
-      // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
     AppRoutingModule,
