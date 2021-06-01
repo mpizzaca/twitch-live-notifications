@@ -29,9 +29,12 @@ router.post("/login", (req, res) => {
       if (!match) {
         return Promise.reject({ status: 401, message: "wrong password" });
       }
-
       const token = jwt.sign({ userID: user._id }, process.env.JWT_PRIVATE_KEY);
-      res.send({ username: user.username, token });
+      res.send({
+        username: user.username,
+        token,
+        webpushSubscription: user.webpushSubscription,
+      });
     })
     .catch((err) => res.status(err.status).send({ message: err.message }));
 });
