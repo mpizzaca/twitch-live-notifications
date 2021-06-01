@@ -1,46 +1,55 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@500&family=Titillium+Web:wght@400;600&display=swap");
+@import "../app.component.scss";
 
-div.channel-list__list-item {
+div.channel {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid red;
+  border: 2px solid black;
+  background-color: rgb(169, 169, 169);
+  border-radius: 15px;
   width: 100%;
-  max-width: 500px;
+  max-width: $content-max-width;
+
+  &:hover {
+    background-color: rgb(211, 211, 211);
+  }
 
   > div {
     display: flex;
     align-items: center;
     width: 50%;
 
-    &.list-item__right {
+    .avatar__img {
+      border-radius: 50%;
+      border: 2px solid $color-purple;
+      width: 50px;
+      height: 50px;
+    }
+
+    .avatar__name {
+      margin-left: 1rem;
+      font-family: "Titillium Web";
+      font-weight: 600;
+    }
+
+    &.channel__right {
       justify-content: flex-end;
 
-      > div.list-item__add-channel-button {
-        padding: 0 0.5rem;
-        width: 15%;
+      > div.channel__add-button {
+        cursor: pointer;
+        padding: 0.6rem;
+      }
+
+      .channel__status {
+        color: white;
+        background-color: rgb(233, 25, 22);
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-family: "Inter";
+        user-select: none;
       }
     }
-  }
-
-  img {
-    width: 50px;
-    height: 50px;
-  }
-
-  span {
-    margin-left: 2rem;
-    font-family: "Titillium Web";
-    font-weight: 600;
-  }
-
-  .status {
-    color: white;
-    background-color: rgb(233, 25, 22);
-    padding: 2px 4px;
-    border-radius: 6px;
-    font-family: "Inter";
-    user-select: none;
   }
 }

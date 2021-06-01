@@ -1,13 +1,28 @@
-<div class="channel-list__list-item">
-  <div>
-    <img src={{channel.avatarURL}} alt={{channel.name}} />
-    <span>{{channel.name}}</span>
+<div class="channel p-2">
+  <div class="channel__avatar">
+    <img
+      class="avatar__img"
+      src="{{ channel.avatarURL }}"
+      alt="{{ channel.name }}"
+    />
+    <span class="avatar__name">{{ channel.name }}</span>
   </div>
-  <div class="list-item__right">
-    <span *ngIf="channel.live" class="status">LIVE</span>
-    <div class="list-item__add-channel-button">
-      <button *ngIf="!channel.subscribed" (click)="subscribe(channel)">+</button>
-      <button *ngIf="channel.subscribed" (click)="unsubscribe(channel)">-</button>
+  <div class="channel__right">
+    <span *ngIf="channel.live" class="channel__status">LIVE</span>
+    <div
+      class="channel__add-button"
+      (click)="channel.subscribed ? unsubscribe(channel) : subscribe(channel)"
+    >
+      <fa-icon
+        *ngIf="!channel.subscribed"
+        [icon]="faPlusCircle"
+        class="fa-lg"
+      ></fa-icon>
+      <fa-icon
+        *ngIf="channel.subscribed"
+        [icon]="faMinusCircle"
+        class="fa-lg"
+      ></fa-icon>
     </div>
   </div>
 </div>
