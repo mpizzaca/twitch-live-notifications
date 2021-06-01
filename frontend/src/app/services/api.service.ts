@@ -113,10 +113,22 @@ export class ApiService {
         { webpushSubscription: sub },
         this.httpOptions
       )
-      .subscribe();
+      .subscribe(() => {
+        // Add the pushSub to the user object
+        const user = JSON.parse(localStorage.getItem('user')!);
+        user.webpushSubscription = sub;
+        localStorage.setItem('user', JSON.stringify(user));
+      });
   }
 
   deletePushSubscription(): void {
-    this.http.delete(this.ENDPOINTS.subscription, this.httpOptions).subscribe();
+    this.http
+      .delete(this.ENDPOINTS.subscription, this.httpOptions)
+      .subscribe(() => {
+        // Delete the pushSub from the user object
+        const user = JSON.parse(localStorage.getItem('user')!);
+        user.webpushSubscription = null;
+        localStorage.setItem('user', JSON.stringify(user));
+      });
   }
 }
