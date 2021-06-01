@@ -1,6 +1,8 @@
+@import "../app.component.scss";
+
 .nav {
   display: flex;
-  background: #9147ff;
+  background: $color-purple;
   justify-content: space-between;
   align-items: center;
   height: 50px;

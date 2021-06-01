@@ -14,8 +14,8 @@ import { LoadingComponent } from './loading/loading.component';
 import { AppRoutingModule } from './app-routing.module';
 import { JwtInterceptor, ErrorInterceptor } from './helpers';
 import { HomeComponent } from './home/home.component';
-import { NavComponent } from './nav/nav.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NavModule } from './nav/nav.module';
 
 @NgModule({
   declarations: [
@@ -26,7 +26,6 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     NotificationComponent,
     LoadingComponent,
     HomeComponent,
-    NavComponent,
   ],
   imports: [
     FormsModule,
@@ -39,10 +38,12 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
       registrationStrategy: 'registerWhenStable:30000',
     }),
     AppRoutingModule,
+    NavModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    ChannelSearchComponent,
   ],
   bootstrap: [AppComponent],
 })

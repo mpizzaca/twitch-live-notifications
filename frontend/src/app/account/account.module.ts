@@ -8,6 +8,7 @@ import { LoginComponent } from './login.component';
 import { RegisterComponent } from './register.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlertComponent } from '../alert/alert.component';
+import { NavModule } from '../nav/nav.module';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { AlertComponent } from '../alert/alert.component';
     ReactiveFormsModule,
     FontAwesomeModule,
     AccountRoutingModule,
+    NavModule,
   ],
   declarations: [
     LayoutComponent,

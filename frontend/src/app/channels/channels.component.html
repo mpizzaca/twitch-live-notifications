@@ -1,6 +1,9 @@
 <div class="container">
   <h2 class="title is-4">My Channels</h2>
   <ul class="channels">
+    <p *ngIf="channels.length === 0" class="notification">
+      You aren't receiving notifications for any channels... add one below!
+    </p>
     <li *ngFor="let channel of channels">
       <app-channel-list-item [channel]="channel"></app-channel-list-item>
     </li>

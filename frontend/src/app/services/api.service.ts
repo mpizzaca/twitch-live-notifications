@@ -52,10 +52,18 @@ export class ApiService {
   }
 
   register(username: string, password: string): Observable<User> {
-    return this.http.post<User>(this.ENDPOINTS.register, {
-      username,
-      password,
-    });
+    return this.http
+      .post<User>(this.ENDPOINTS.register, {
+        username,
+        password,
+      })
+      .pipe(
+        map((user: User) => {
+          localStorage.setItem('user', JSON.stringify(user));
+          this.userSubject.next(user);
+          return user;
+        })
+      );
   }
 
   logout(): void {
