@@ -1,25 +1,24 @@
+@import "../app.component.scss";
+
 ul {
+  max-width: $content-max-width;
   list-style: none;
-  padding: 0.2rem;
-}
-
-.container {
-  margin: 1rem;
-}
-
-.title.is-4 {
-  margin: 0;
 }
 
 .control {
   width: 100%;
-  max-width: 500px;
+  max-width: $content-max-width;
+}
+
+.search-results {
+  background-color: rgb(75, 75, 75);
+  border-radius: 15px;
 }
 
 #search-box:not(.has-search-query)::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
 
-.has-search-query::-webkit-search-cancel-button {
+#search-box.has-search-query::-webkit-search-cancel-button {
   position: relative;
 }

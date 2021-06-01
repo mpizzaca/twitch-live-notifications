@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Observable, Subject, of } from 'rxjs';
 import {
   debounceTime,
@@ -16,9 +16,12 @@ import { ChannelService } from '../services/channel.service';
   styleUrls: ['./channel-search.component.scss'],
 })
 export class ChannelSearchComponent implements OnInit {
+  searchBoxText!: string;
   channels: Channel[] = [];
   private searchTerms = new Subject<string>();
+  // controls the loading spinner
   loading = false;
+  // determines if we show 'x' button to clear search input
   enableClear = false;
 
   constructor(private channelService: ChannelService) {}
@@ -53,6 +56,12 @@ export class ChannelSearchComponent implements OnInit {
         this.filterSubscribedChannels(channel)
       );
     });
+  }
+
+  clearSearch(): void {
+    this.searchBoxText = '';
+    this.searchTerms.next('');
+    this.channels = [];
   }
 
   private filterSubscribedChannels(channel: Channel): boolean {

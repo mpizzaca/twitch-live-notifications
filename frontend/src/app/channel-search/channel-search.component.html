@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container m-4">
   <div class="is-flex is-flex-direction-row is-align-items-center">
     <div class="control is-large" [ngClass]="{ 'is-loading': loading }">
       <input
@@ -7,15 +7,16 @@
         #searchBox
         type="search"
         (input)="search(searchBox.value)"
-        placeholder="search channels..."
+        [(ngModel)]="searchBoxText"
+        placeholder="add a channel..."
         [ngClass]="{
           'has-search-query': this.enableClear && searchBox.value.length > 0
         }"
       />
     </div>
   </div>
-  <ul>
-    <li *ngFor="let channel of channels">
+  <ul class="search-results my-1" [ngClass]="{ 'p-2': channels.length > 0 }">
+    <li *ngFor="let channel of channels" class="my-2">
       <app-channel-list-item [channel]="channel"></app-channel-list-item>
     </li>
   </ul>
